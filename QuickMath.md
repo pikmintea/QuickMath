@@ -24,7 +24,7 @@ Donc le plan est :
 
 ---
 
-## Hosting (tout gratuit)
+## Hosting 
 
 | Option           | Gratuit | Domaine custom |
 | ---------------- | ------- | -------------- |
