@@ -2,7 +2,7 @@
 
 ## Platforms & ordre de build
 
-1. **Windows Forms** — prototype, test gameplay en cours
+1. **Windows Forms** — Full lokal, QuickMath-Desktop
 2. **Web** — version principale (React)
 3. **Android** — React Native (même codebase que le web quasi)
 
@@ -24,13 +24,13 @@ Donc le plan est :
 
 ---
 
-## Hosting 
+## Hosting (tout gratuit)
 
-| Option           | Gratuit | Domaine custom |
-| ---------------- | ------- | -------------- |
-| Firebase Hosting | ✅       | (payant)       |
-| GitHub Pages     | ✅       | (gratuit)      |
-| Vercel           | ✅       | (gratuit)      |
+| Option           | Prix | Domaine custom |
+| ---------------- | ---- | -------------- |
+| Firebase Hosting | 0€   | (payant)       |
+| GitHub Pages     | 0€   | (gratuit)      |
+| Vercel           | 0€   | (gratuit)      |
 
 **Recommandation : Firebase Hosting** — tout au même endroit (auth + db + hosting)
 
@@ -49,29 +49,31 @@ Donc le plan est :
 
 ### 🟡 Maintenant — WinForms
 
-- [ ] Finir addition proprement
-- [ ] Ajouter soustraction, multiplication, division
-- [ ] Système de difficulté qui marche
-- [ ] Timer optionnel
-- [ ] UI plus propre
+- [x] Addition Fini
+- [x] Ajouter soustraction 
+- [ ] Ajouter division
+- [ ] Ajouter multiplication
+- [x] Système de difficulté qui marche (WIP)
+- [ ] UI plus propre (WIP)
 - [ ] Tester le gameplay — est-ce que c'est fun ? (non)
+- [ ] Trouver meilleur que json pour les saves (SQL?)
 
 ### 🔵 Ensuite — Firebase setup
 
-- [ ] Créer projet Firebase
-- [ ] Configurer Auth Google
+- [x] Créer projet Firebase
+- [x] Configurer Auth Google
 - [ ] Définir structure Firestore (XP, username, stats...)
 - [ ] Tester API
 
-### 🟣 Web — React
+### 🟣 Web — ~~React~~ vue.js
 
-- [ ] Setup projet React
+- [x] Setup projet ~~React~~ vue
 - [ ] Pages : Home, Jeu, Profil, Leaderboard
-- [ ] Intégrer Firebase Auth
+- [x] Intégrer Firebase Auth
 - [ ] Intégrer Firestore
 - [ ] Deploy sur Firebase Hosting
 
-### 🟢 Android — React Native
+### 🟢 Android — ~~React Native~~ a mediter
 
 - [ ] Setup React Native
 - [ ] Réutiliser logique du web
@@ -86,7 +88,6 @@ Donc le plan est :
 - [ ] Badges / succès
 - [ ] Modes de jeu (contre la montre, survie)
 - [ ] Leaderboard global
-- [ ] App iOS (compte dev Apple = 99€/an, décider plus tard)
 
 ---
 
@@ -101,6 +102,4 @@ Donc le plan est :
 | **Total minimum**       | **$0**                       |
 | **Total si Play Store** | **~20€**                     |
 
-Allright ca a l''air pas mal
-
-
+Allright ca a l'air pas mal
