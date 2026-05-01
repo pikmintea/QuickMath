@@ -10,9 +10,9 @@
 
 ## Clarification React
 
-React ≠ Electron.
+App android ≠ Electron.
 
-- **Electron** = app desktop avec React/JS (lourd, pas ce qu'on veut)
+- **Electron** = app desktop avec React/JS (lourd, nul)
 - **React** = site web normal
 - **React Native** = app mobile Android/iOS, code séparé mais même logique/langage
 
@@ -47,7 +47,7 @@ Donc le plan est :
 
 ## Liste des choses à faire — dans l'ordre (je crois)
 
-### 🟡 Maintenant — WinForms
+### 🟡 WinForms
 
 - [x] Addition Fini
 - [x] Ajouter soustraction 
@@ -57,8 +57,11 @@ Donc le plan est :
 - [ ] UI plus propre (WIP)
 - [ ] Tester le gameplay — est-ce que c'est fun ? (non)
 - [ ] Trouver meilleur que json pour les saves (SQL?)
+- [ ] refractor tout.
+- [ ] Clen le code, arete les spageti
+- [ ] Metre les fonction bcp utilisé (ex : SaveData) Dans des Class (v0.3.X)
 
-### 🔵 Ensuite — Firebase setup
+### 🔵 Firebase setup
 
 - [x] Créer projet Firebase
 - [x] Configurer Auth Google
@@ -80,6 +83,7 @@ Donc le plan est :
 - [ ] Tester sur émulateur
 - [ ] Préparer pour Play Store
 - [ ] Compte dev Play Store — ~20€ une seule fois
+- [ ] Trouver meilleur moyent que react native...
 
 ### ⚪ Plus tard
 
