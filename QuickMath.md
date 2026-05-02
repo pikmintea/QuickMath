@@ -13,7 +13,7 @@
 App android ≠ Electron.
 
 - **Electron** = app desktop avec React/JS (lourd, nul)
-- **React** = site web normal
+- **React** = site web
 - **React Native** = app mobile Android/iOS, code séparé mais même logique/langage
 
 Donc le plan est :
@@ -45,7 +45,7 @@ Donc le plan est :
 
 ---
 
-## Liste des choses à faire — dans l'ordre (je crois)
+## Liste des choses à faire — (je crois)
 
 ### 🟡 WinForms
 
@@ -57,9 +57,9 @@ Donc le plan est :
 - [ ] UI plus propre (WIP)
 - [ ] Tester le gameplay — est-ce que c'est fun ? (non)
 - [ ] Trouver meilleur que json pour les saves (SQL?)
-- [ ] refractor tout.
-- [ ] Clen le code, arete les spageti
-- [ ] Metre les fonction bcp utilisé (ex : SaveData) Dans des Class (v0.3.X)
+- [ ] refractor tout. (wip)
+- [ ] Clen le code, arete les spageti (wip)
+- [ ] Metre les fonction bcp utilisé (ex : SaveData) Dans des Class (v0.3.X) (wip)
 
 ### 🔵 Firebase setup
 
@@ -75,10 +75,11 @@ Donc le plan est :
 - [x] Intégrer Firebase Auth
 - [ ] Intégrer Firestore
 - [ ] Deploy sur Firebase Hosting
+- [ ] avoir un bon desing
 
 ### 🟢 Android — ~~React Native~~ a mediter
 
-- [ ] Setup React Native
+- [ ] Setup ~~React Native~~
 - [ ] Réutiliser logique du web
 - [ ] Tester sur émulateur
 - [ ] Préparer pour Play Store
@@ -96,6 +97,8 @@ Donc le plan est :
 ---
 
 ## Budget
+
+buget total : 0€ 
 
 | Chose                   | Coût                         |
 | ----------------------- | ---------------------------- |
