@@ -60,6 +60,7 @@ Donc le plan est :
 - [ ] refractor tout. (wip)
 - [ ] Clen le code, arete les spageti (wip)
 - [ ] Metre les fonction bcp utilisé (ex : SaveData) Dans des Class (v0.3.X) (wip)
+- [ ] rendre plus simple a upgrade.
 
 ### 🔵 Firebase setup
 
