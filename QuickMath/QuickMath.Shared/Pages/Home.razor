@@ -2,33 +2,275 @@
 @using QuickMath.Shared.Services
 @inject IFormFactor FormFactor
 
+<PageTitle>QuickMath — Home</PageTitle>
 
+<div class="home">
 
-<PageTitle>Home</PageTitle>
+    <!-- Welcome -->
+    <div class="welcome-row">
+        <div>
+            <h2 class="welcome-title">Welcome back, <span class="accent">@Username</span> </h2>
+            <p class="welcome-sub">Ready to train your brain today?</p>
+        </div>
+        <a href="/practice" class="play-btn">Start Practice →</a>
+    </div>
 
-<h2 Color="Color.Primary">
-    Welcome back <strong class="welcome-back-Username">@Username</strong> 
-</h2>
+    <!-- Cards row -->
+    <div class="cards-row">
 
+        <!-- Niveau + XP -->
+        <div class="card xp-card">
+            <div class="card-header">
+                <span class="card-label">LEVEL</span>
+                <span class="accent">@XP <span class="muted">/ @XPNextLevel XP</span></span>
+            </div>
+            <div class="level-row">
+                <div class="level-badge">@Level</div>
+                <span class="level-name">@LevelName</span>
+            </div>
+            <div class="xp-bar-bg">
+                <div class="xp-bar-fill" style="width: @XPPercent%"></div>
+            </div>
+            <p class="xp-hint">@(XPNextLevel - XP) XP to next level</p>
+        </div>
 
+        <!-- Streak -->
+        <div class="card streak-card">
+            <div class="card-header">
+                <span class="card-label">DAILY STREAK</span>
+                @if (DoneToday)
+                {
+                    <span class="done-badge">✓ Done today!</span>
+                }
+            </div>
+            <div class="streak-count">
+                <span class="fire">🔥</span>
+                <span class="streak-num">@Streak</span>
+                <span class="muted">days</span>
+            </div>
+            <div class="streak-week">
+                @foreach (var day in WeekDays)
+                {
+                    <div class="day-dot @(day.Done ? "done" : "") @(day.IsToday ? "today" : "")">
+                        <span class="day-label">@day.Name</span>
+                        <div class="dot">@(day.Done ? "✓" : "")</div>
+                    </div>
+                }
+            </div>
+            @if (Streak > 1)
+            {
+                <p class="streak-best muted">Best: @BestStreak days</p>
+            }
+        </div>
 
-@code {
-
-   public string Username = "Jhonn Doe" ;
-
-}
+    </div>
+</div>
 
 <style>
-
-    .welcome-back {
-        lighting-color: #8e24ff;
-        color: #8e24ff;
+    .home {
+        padding: 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
     }
 
-    .welcome-back-Username {
-        lighting-color: #8e24ff;
-        color: #8e24ff;
-
+    /* Welcome */
+    .welcome-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
     }
- 
+    .welcome-title {
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+    .welcome-sub {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+    .accent { color: var(--accent); }
+    .muted  { color: var(--muted); }
+
+    .play-btn {
+        background: var(--accent);
+        color: white;
+        padding: 0.75rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: opacity 0.15s, transform 0.15s;
+        white-space: nowrap;
+    }
+    .play-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* Cards */
+    .cards-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+    media (max-width: 600px) {
+        .cards-row { grid-template-columns: 1fr; }
+    }
+
+    .card {
+        background: var(--bg2);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 14px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+    }
+    .card-label { font-weight: 600; }
+
+    /* XP card */
+    .level-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .level-badge {
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        background: rgba(142, 36, 255, 0.2);
+        border: 2px solid var(--accent);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700;
+        color: var(--accent);
+        font-size: 1.1rem;
+    }
+    .level-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .xp-bar-bg {
+        height: 8px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 99px;
+        overflow: hidden;
+    }
+    .xp-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), #a855f7);
+        border-radius: 99px;
+        transition: width 0.6s ease;
+    }
+    .xp-hint {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    /* Streak card */
+    .streak-count {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+    }
+    .fire { font-size: 1.5rem; }
+    .streak-num {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    .streak-week {
+        display: flex;
+        justify-content: space-between;
+        gap: 4px;
+        margin-top: 0.25rem;
+    }
+    .day-dot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        flex: 1;
+    }
+    .day-label {
+        font-size: 0.65rem;
+        color: var(--muted);
+        text-transform: uppercase;
+    }
+    .dot {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.65rem;
+        color: var(--muted);
+    }
+    .day-dot.done .dot {
+        background: rgba(142,36,255,0.25);
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+    .day-dot.today .dot {
+        border-color: #a855f7;
+        box-shadow: 0 0 8px rgba(142,36,255,0.4);
+    }
+
+    .done-badge {
+        color: #4ade80;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .streak-best {
+        font-size: 0.8rem;
+        margin: 0;
+    }
 </style>
+
+@code {
+    // ── Données statiques pour l'instant — remplacer par Firebase plus tard
+    public string Username = "Yelow";
+
+    public int XP = 70;
+    public int XPNextLevel = 100;
+    public int Level = 0;
+    public string LevelName = "Newbie";
+    public double XPPercent => Math.Min((double)XP / XPNextLevel * 100, 100);
+
+    public int Streak = 1;
+    public int BestStreak = 1;
+    public bool DoneToday = true;
+
+    public class WeekDay
+    {
+        public string Name { get; set; } = "";
+        public bool Done { get; set; }
+        public bool IsToday { get; set; }
+    }
+
+    public List<WeekDay> WeekDays = new()
+    {
+        new WeekDay { Name = "Mon", Done = false },
+        new WeekDay { Name = "Tue", Done = false },
+        new WeekDay { Name = "Wed", Done = false },
+        new WeekDay { Name = "Thu", Done = false },
+        new WeekDay { Name = "Fri", Done = false },
+        new WeekDay { Name = "Sat", Done = false },
+        new WeekDay { Name = "Sun", Done = true, IsToday = true },
+    };
+}
