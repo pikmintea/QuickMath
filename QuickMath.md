@@ -8,19 +8,14 @@
 
 ---
 
-## Clarification React
 
-App android ≠ Electron.
 
-- **Electron** = app desktop avec React/JS (lourd, nul)
-- **React** = site web
-- **React Native** = app mobile Android/iOS, code séparé mais même logique/langage
+## le plan :
 
-Donc le plan est :
-
-- React pour le site web
-- React Native pour Android
-- Beaucoup de code/logique réutilisable entre les deux 
+- ~~React pour le site web~~
+- ~~Vue pour le site web~~
+- ~~React Native pour Android~~
+- Maui Blazor, multiplateforme.
 
 ---
 
@@ -69,18 +64,18 @@ Donc le plan est :
 - [ ] Définir structure Firestore (XP, username, stats...)
 - [ ] Tester API
 
-### 🟣 Web — ~~React~~ vue.js
+### 🟣 Web — ~~React~~ | ~~vue.js~~ | Maui Blazor
 
-- [x] Setup projet ~~React~~ vue
+- [x] Setup projet ~~React~~ | ~~vue~~ | Maui Blazor
 - [ ] Pages : Home, Jeu, Profil, Leaderboard
 - [x] Intégrer Firebase Auth
 - [ ] Intégrer Firestore
 - [ ] Deploy sur Firebase Hosting
-- [ ] avoir un bon desing
+- [ ] avoir un bon Ui
 
-### 🟢 Android — ~~React Native~~ a mediter
+### 🟢 Android — ~~React Native~~ | ~~a mediter~~ | Maui blazor
 
-- [ ] Setup ~~React Native~~
+- [ ] Setup ~~React Native~~ | Maui Blazor
 - [ ] Réutiliser logique du web
 - [ ] Tester sur émulateur
 - [ ] Préparer pour Play Store
