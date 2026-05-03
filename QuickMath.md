@@ -8,8 +8,6 @@
 
 ---
 
-
-
 ## le plan :
 
 - ~~React pour le site web~~
@@ -68,7 +66,7 @@
 
 - [x] Setup projet ~~React~~ | ~~vue~~ | Maui Blazor
 - [ ] Pages : Home, Jeu, Profil, Leaderboard
-- [x] Intégrer Firebase Auth
+- [ ] Intégrer Firebase Auth
 - [ ] Intégrer Firestore
 - [ ] Deploy sur Firebase Hosting
 - [ ] avoir un bon Ui

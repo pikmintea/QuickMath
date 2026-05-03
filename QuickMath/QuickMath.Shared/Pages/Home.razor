@@ -2,13 +2,33 @@
 @using QuickMath.Shared.Services
 @inject IFormFactor FormFactor
 
+
+
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h2 Color="Color.Primary">
+    Welcome back <strong class="welcome-back-Username">@Username</strong> 
+</h2>
 
-Welcome to your new app running on <em>@factor</em> using <em>@platform</em>.
+
 
 @code {
-    private string factor => FormFactor.GetFormFactor();
-    private string platform => FormFactor.GetPlatform();
+
+   public string Username = "Jhonn Doe" ;
+
 }
+
+<style>
+
+    .welcome-back {
+        lighting-color: #8e24ff;
+        color: #8e24ff;
+    }
+
+    .welcome-back-Username {
+        lighting-color: #8e24ff;
+        color: #8e24ff;
+
+    }
+ 
+</style>
