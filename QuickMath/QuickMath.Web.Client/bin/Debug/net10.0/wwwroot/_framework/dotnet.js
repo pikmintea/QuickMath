@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "QuickMath.Web.Client",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-iEc75obRIgdc34rjcLI6QBDaGznHLEoKptbYgJT+4EE=",
+    "hash": "sha256-M04Rbriye+9apJqBEoGZx+s0zIfwrG7vcr87ZWgB/0Y=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.mx9wzm9o5h.js"
@@ -1356,28 +1356,28 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "QuickMath.Shared.wasm",
-        "name": "QuickMath.Shared.542haovlff.wasm",
-        "integrity": "sha256-CwHb9Spcdo23MKjSr8+gVdgc+jRgfTFzGJsdSNN07H0=",
+        "name": "QuickMath.Shared.lvvv1dkz6i.wasm",
+        "integrity": "sha256-IajIuSMBXhtngYC6ltTVDBI8IRqNkpCq7HgQG4IXk8M=",
         "cache": "force-cache"
       },
       {
         "virtualPath": "QuickMath.Web.Client.wasm",
-        "name": "QuickMath.Web.Client.656acdv2lg.wasm",
-        "integrity": "sha256-mo25pqPNdGs1b6S6+G7ytSKfOSL7gUwSRHAMCm+lMxE=",
+        "name": "QuickMath.Web.Client.h7m9n3xczc.wasm",
+        "integrity": "sha256-U7Qcu7tMLPXWMHugCMT4zesUQVgteI4oZOG8sWlWyYA=",
         "cache": "force-cache"
       }
     ],
     "pdb": [
       {
         "virtualPath": "QuickMath.Shared.pdb",
-        "name": "QuickMath.Shared.89at1olumh.pdb",
-        "integrity": "sha256-LKoPiEFiiRQZziuIYUc2iwrbLMvSX6se2zzxq/apocA=",
+        "name": "QuickMath.Shared.iitrdiw0vs.pdb",
+        "integrity": "sha256-KoPRvYNjJ10z6Ax6l5dtmIIx9m4/CcSTtkLUvkXkqGc=",
         "cache": "force-cache"
       },
       {
         "virtualPath": "QuickMath.Web.Client.pdb",
-        "name": "QuickMath.Web.Client.3dfxkw95va.pdb",
-        "integrity": "sha256-B7BiYhnUTU42ebgG4J1lKGjIMeLb0AJn2HB0l3meObg=",
+        "name": "QuickMath.Web.Client.4cooesgo8j.pdb",
+        "integrity": "sha256-NE99wglMLD1X8HRaMq9ccIV3nrG02ZnnWVW9GXNck9Q=",
         "cache": "force-cache"
       }
     ],
