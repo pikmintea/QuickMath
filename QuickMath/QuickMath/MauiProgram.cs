@@ -24,6 +24,9 @@ namespace QuickMath
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
+#if ANDROID
+            Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
+#endif
 #endif
 
             return builder.Build();
