@@ -396,18 +396,17 @@ Empty/minimal — for MAUI BlazorWebView components.
 
 ## Potential Issues & Risks
 
-### 1. Google Packages Bloat WASM Bundle
-**Severity: High**
+### 1. Google Packages Bloat WASM Bundle (FIXED)
+**Severity: Fixed**
 
-As detailed above, `Google.Apis.Auth` and `Google.Cloud.Firestore` with all transitive dependencies (~25+ assemblies including gRPC, Protobuf, Google.Api.*) are downloaded to the browser but never used.
+~~`Google.Apis.Auth` and `Google.Cloud.Firestore` with all transitive dependencies (~25+ assemblies including gRPC, Protobuf, Google.Api.*) were included in the WASM download even though they were **not used**.~~
 
-**Impact:**
-- Increased initial page load time
-- Larger bandwidth consumption
-- Slower time-to-interactive
-- Worse performance on slow networks
+**Fix applied (2026-05-06):** Google packages were removed from `QuickMath.Shared` as they are not compatible with MAUI Blazor WebView and were causing the infinite loading screen on Android.
 
-**Recommendation:** Move Firebase packages to `QuickMath.Web` (server-only) and implement a thin API layer. The client should call server endpoints, not talk directly to Firestore from the browser.
+**For future Firebase integration:**
+- Use MAUI-compatible Firebase SDK for Android
+- Create REST API wrappers for Web clients
+- Do NOT use `Google.Apis.Auth` or `Google.Cloud.Firestore` in Shared project
 
 ---
 

@@ -1,3 +1,12 @@
+:root {
+    --bg:     #0a0a0f;
+    --bg2:    #111118;
+    --bg3:    #1a1a24;
+    --accent: #8e24ff;
+    --text:   #f0f0f5;
+    --muted:  #6b6b80;
+}
+
 .status-bar-safe-area {
     display: none;
 }

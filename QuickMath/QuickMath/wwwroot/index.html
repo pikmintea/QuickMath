@@ -107,6 +107,15 @@
 
     <script src="_framework/blazor.webview.js"></script>
 
+    <script>
+        // Hide loader once Blazor is ready
+        Blazor.addEventListener('initialized', function () {
+            var loader = document.querySelector('.loader');
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        });
+    </script>
 
 </body>
 

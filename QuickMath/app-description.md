@@ -109,9 +109,9 @@ The solution is split into **4 projects**:
 ### Shared Project
 | Package | Version | Purpose |
 |---------|---------|---------|
-| `Google.Apis.Auth` | 1.74.0 | Google OAuth (planned) |
-| `Google.Cloud.Firestore` | 4.2.0 | Firebase Firestore (planned) |
 | `Microsoft.AspNetCore.Components.Web` | 10.0.7 | Blazor component base |
+
+**Note:** `Google.Apis.Auth` and `Google.Cloud.Firestore` were removed from Shared as they are not compatible with MAUI Blazor WebView and were causing the infinite loading screen on Android.
 
 ### Web Project
 | Package | Version |
@@ -133,10 +133,11 @@ The solution is split into **4 projects**:
 - **Hosting**: Web deployment
 - **Cloud Functions**: Server-side logic (leaderboard, etc.)
 
-### Firestore is referenced in packages but NOT wired up:
-- `Google.Apis.Auth` and `Google.Cloud.Firestore` are installed in `QuickMath.Shared`
+### Status as of 2026-05-06:
+- `Google.Apis.Auth` and `Google.Cloud.Firestore` were **removed** from `QuickMath.Shared` (not compatible with MAUI Blazor WebView)
 - No service classes, DI registration, or actual Firestore calls exist in code yet
 - All Home page data is hardcoded (`Username = "Yelow"`, `XP = 70`, etc.)
+- **Next step:** Use MAUI-compatible Firebase SDK or create REST API wrappers
 
 ---
 
@@ -159,7 +160,7 @@ WeekDays: 7 days (only Sunday marked done + today)
 
 | Platform | Target Framework | Min Version |
 |----------|-----------------|-------------|
-| Android | `net10.0-android` | API 24 |
+| Android | `net10.0-android` | API 30 (Android 11) |
 | iOS | `net10.0-ios` | 15.0 |
 | Mac Catalyst | `net10.0-maccatalyst` | 15.0 |
 | Windows | `net10.0-windows10.0.19041.0` | 10.0.17763.0 |
@@ -167,6 +168,7 @@ WeekDays: 7 days (only Sunday marked done + today)
 - Windows package type: `None` (not packaged for Microsoft Store)
 - App ID: `com.companyname.quickmath`
 - Version: 1.0 (build 1)
+- **Android fix (2026-05-06):** Infinite loading screen fixed by adding `Blazor.addEventListener('initialized', ...)` to hide loader
 
 ---
 
@@ -209,16 +211,17 @@ WeekDays: 7 days (only Sunday marked done + today)
 | Home page UI | Complete (visual only, static data) |
 | Practice page | Placeholder (counter demo) |
 | Profile page | Placeholder (weather demo) |
-| Firebase/Auth | Packages installed, zero implementation |
+| Firebase/Auth | Packages **removed** from Shared (incompatible with MAUI Blazor) |
 | Backend/API | None |
 | Leaderboard | UI placeholder only |
 | Navigation/Layout | Complete |
-| Dark theme | Complete |
+| Dark theme | Complete (CSS vars added to MAUI wwwroot) |
 | Responsive design | Basic (sidebar collapse, card grid) |
 | Multi-platform | Configured for Android/iOS/Mac/Windows |
 | Web Auto render mode | Configured (Server → WASM hydration) |
 | Error handling | Basic (Blazor error UI, Error page, NotFound) |
 | Reconnection modal | Standard Blazor Server template |
+| Android loading fix | **FIXED** (2026-05-06) — loader now hides when Blazor initializes |
 
 ---
 

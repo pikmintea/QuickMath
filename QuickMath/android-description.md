@@ -4,6 +4,13 @@
 
 The Android target is one of four platforms supported by the MAUI Blazor project. It runs the shared Blazor UI inside a native `BlazorWebView` hosted in a `MauiAppCompatActivity`.
 
+**Current Status (as of 2026-05-06):**
+- ✅ Build succeeds
+- ✅ Infinite loading screen issue FIXED (added `Blazor.addEventListener('initialized', ...)` to hide loader)
+- ✅ CSS variables (`--bg`, `--accent`, etc.) added to MAUI `wwwroot/app.css`
+- ⚠️ Google Auth / Firestore still not configured
+- ⚠️ Package name mismatch (`com.companyname.quickmath` vs `com.pikmintea.quickmath` in old docs - now aligned)
+
 ---
 
 ## Configuration
@@ -77,7 +84,7 @@ label="Quickmath"
 | Setting | Value |
 |---------|-------|
 | Target framework | `net10.0-android` |
-| Min SDK (API level) | `24` (Android 7.0 Nougat) |
+| Min SDK (API level) | `30` (Android 11.0) |
 | Active debug profile | `Fairphone FP4 (Android 15.0 - API 35)` |
 | Default emulator | `pixel_7_-_api_36_0` |
 | Platform group | `PhysicalDevice` |
@@ -132,7 +139,30 @@ label="Quickmath"
 
 ## Potential Issues & Risks
 
-### 1. Package Name Mismatch
+### 1. Infinite Loading Screen on Android (FIXED)
+**Severity: High — FIXED**
+
+The `index.html` contained a CSS animation loader inside `<div id="app">`, but no code was hiding it when Blazor finished loading. On Android, this caused the loader to persist indefinitely.
+
+**Fix applied:** Added JavaScript to `index.html` that listens for `Blazor.addEventListener('initialized', ...)` and hides the `.loader` element once Blazor is ready.
+
+```javascript
+Blazor.addEventListener('initialized', function () {
+    var loader = document.querySelector('.loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+});
+```
+
+### 2. Missing CSS Variables in MAUI wwwroot
+**Severity: Medium — FIXED**
+
+The `Home.razor` page uses CSS variables (`--bg`, `--accent`, `--text`, `--muted`) that were not defined in the MAUI `wwwroot/app.css`. This caused unstyled content on Android.
+
+**Fix applied:** Added `:root` CSS variables to `QuickMath/QuickMath/wwwroot/app.css`.
+
+### 3. Package Name Mismatch
 **Severity: Low**
 
 The `.csproj` declares:
@@ -142,47 +172,47 @@ The `.csproj` declares:
 
 But `AndroidManifest.xml` declares:
 ```xml
-package="com.pikmintea.quickmath"
+package="com.companyname.quickmath"
 ```
 
 The manifest `package` attribute takes precedence. This inconsistency can cause confusion during publishing, Firebase project linking, or Play Store registration. **Recommendation:** Align both to the same value.
 
 ---
 
-### 2. Google Auth on Android (Not Configured)
+### 4. Google Auth on Android (Not Configured)
 **Severity: High (if auth is needed)**
 
-`Google.Apis.Auth` is installed but:
-- No SHA-1 fingerprint has been configured in any Firebase console
-- No `google-services.json` file exists in the Android platform folder
-- No auth service registration in `MauiProgram.cs`
-- Google Sign-In on Android requires a properly configured OAuth client linked to the app's signing certificate
+~~`Google.Apis.Auth` is installed but:~~ **REMOVED** — Google packages were removed from `QuickMath.Shared` as they are not compatible with MAUI Blazor WebView.
 
-**To fix:** Add `google-services.json` to `Platforms/Android/`, configure Firebase project, and register SHA-1 fingerprints.
+To add Google Auth later:
+- Add `google-services.json` to `Platforms/Android/`
+- Configure Firebase project
+- Register SHA-1 fingerprints
+- Use a MAUI-compatible auth library (not `Google.Apis.Auth`)
 
 ---
 
-### 3. Firestore on Android (Not Configured)
+### 5. Firestore on Android (Not Configured)
 **Severity: High (if backend is needed)**
 
-`Google.Cloud.Firestore` is installed but:
-- No Firestore initialization code exists
-- No service classes for data access
-- All Home page data is hardcoded
-- Firestore on MAUI Android requires proper Firebase setup (same as auth)
+~~`Google.Cloud.Firestore` is installed but:~~ **REMOVED** — Google packages were removed from `QuickMath.Shared`.
+
+To add Firestore later:
+- Use Firebase .NET SDK compatible with MAUI, or
+- Create a REST API wrapper instead of using the gRPC-based `Google.Cloud.Firestore`
 
 ---
 
-### 4. WebView Performance & Compatibility
+### 6. WebView Performance & Compatibility
 **Severity: Medium**
 
-- `BlazorWebView` on Android uses the system WebView (Chromium-based). Android 7.0 (API 24) ships with an older WebView that may lack support for modern CSS/JS features
-- The min SDK of API 24 means the app could run on devices with WebView versions that don't fully support .NET 10 Blazor's JavaScript interop requirements
-- **Recommendation:** Consider raising min SDK to API 26+ for better WebView support, or test thoroughly on API 24-25
+- `BlazorWebView` on Android uses the system WebView (Chromium-based)
+- The min SDK is API 30 (Android 11), which ships with a modern WebView that supports current CSS/JS features well
+- **Note:** With API 30+, WebView compatibility is significantly better than with the previously-documented API 24
 
 ---
 
-### 5. Color Theme Inconsistency
+### 7. Color Theme Inconsistency
 **Severity: Low-Medium**
 
 - `colors.xml` uses `#512BD4` (default .NET purple)
@@ -192,7 +222,7 @@ The manifest `package` attribute takes precedence. This inconsistency can cause 
 
 ---
 
-### 6. No ProGuard/R8 Configuration
+### 8. No ProGuard/R8 Configuration
 **Severity: Medium (for release builds)**
 
 - No `proguard.cfg` or R8 rules file exists
@@ -201,7 +231,7 @@ The manifest `package` attribute takes precedence. This inconsistency can cause 
 
 ---
 
-### 7. No Network Security Config
+### 9. No Network Security Config
 **Severity: Medium (if using local dev server)**
 
 - No `network_security_config.xml` defined
@@ -211,7 +241,7 @@ The manifest `package` attribute takes precedence. This inconsistency can cause 
 
 ---
 
-### 8. No Hardware Acceleration Explicitly Set
+### 10. No Hardware Acceleration Explicitly Set
 **Severity: Low**
 
 - `BlazorWebView` benefits from hardware acceleration for smooth rendering
@@ -220,7 +250,7 @@ The manifest `package` attribute takes precedence. This inconsistency can cause 
 
 ---
 
-### 9. ConfigurationChanges May Mask Issues
+### 11. ConfigurationChanges May Mask Issues
 **Severity: Low**
 
 The `ConfigurationChanges` flags prevent the activity from being recreated on rotation, but:
@@ -230,7 +260,7 @@ The `ConfigurationChanges` flags prevent the activity from being recreated on ro
 
 ---
 
-### 10. No Android-Specific Permissions for Future Features
+### 12. No Android-Specific Permissions for Future Features
 **Severity: Informational**
 
 The following permissions are NOT declared but may be needed later:
@@ -242,7 +272,7 @@ The following permissions are NOT declared but may be needed later:
 
 ---
 
-### 11. Debug Profile is Device-Specific
+### 13. Debug Profile is Device-Specific
 **Severity: Low**
 
 The `.csproj.user` references:
@@ -253,7 +283,7 @@ These are machine-specific entries (likely from the developer's workstation). Th
 
 ---
 
-### 12. No Multi-ABI Configuration
+### 14. No Multi-ABI Configuration
 **Severity: Medium (for distribution)**
 
 The `.csproj` doesn't specify `<RuntimeIdentifiers>` for Android:
@@ -263,17 +293,17 @@ The `.csproj` doesn't specify `<RuntimeIdentifiers>` for Android:
 
 ---
 
-### 13. Dotnet Bot Image Still Present
+### 15. Dotnet Bot Image Still Present
 **Severity: Informational**
 
 `dotnet_bot.svg` is included in `Resources/Images/` and referenced in the `.csproj` with a `BaseSize` of 168x208. This is a default template asset that should be removed or replaced.
 
 ---
 
-### 14. No AndroidX or Play Services Dependencies Explicitly Declared
+### 16. No AndroidX or Play Services Dependencies Explicitly Declared
 **Severity: Low**
 
-MAUI 10 bundles most AndroidX libraries, but if Google Auth or Firestore are integrated later, explicit AndroidX and Play Services package references may be needed to avoid version conflicts.
+MAUI 10 bundles most AndroidX libraries. Google packages were removed from Shared, so this is less of a concern now. If Google Auth or Firestore are integrated later with MAUI-compatible libraries, explicit AndroidX and Play Services package references may be needed to avoid version conflicts.
 
 ---
 
