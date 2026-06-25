@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="QuickMath.Shared/QuickMath.Shared.csproj" />
-  <Project Path="QuickMath.Web.Client/QuickMath.Web.Client.csproj" />
-  <Project Path="QuickMath.Web/QuickMath.Web.csproj" />
-  <Project Path="QuickMath/QuickMath.csproj" />
-</Solution>
