@@ -5,3 +5,6 @@
 /QuickMath/QuickMath/obj
 /QuickMath/QuickMath.Web/obj
 /QuickMath/QuickMath.Web.Client/obj
+/bin/Debug
+/obj/Debug
+/obj
