@@ -29,7 +29,7 @@ Créer une application d'apprentissage des mathématiques type "Duolingo", avec 
 
 ## Phase 1 — MVP Web (Blazor)
 
-- [ ] Setup projet Blazor
+- [x] Setup projet Blazor
 - [ ] Page Home
 - [ ] Système exercices (addition/soustraction)
 - [ ] Système XP
@@ -84,5 +84,3 @@ Créer une application d'apprentissage des mathématiques type "Duolingo", avec 
 - pas de electron
 - idk
 - et respecter svp les [rules](https://raw.githubusercontent.com/pikmintea/RULES/refs/heads/main/RULES.TXT)
-
-
