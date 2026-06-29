@@ -1,101 +1,867 @@
 ﻿@page "/play"
+@implements IDisposable
 
-<PageTitle>Math Game</PageTitle>
-
-<div class="game-container">
-    <h1>Fast Addition</h1>
-
-    <div class="question">
-        @Number1 + @Number2 = ?
-    </div>
-
-    <input class="answer-input"
-           type="number"
-           placeholder="Your answer..."
-           @bind="UserAnswer"
-           @bind:event="oninput" />
-
-    <div class="score">
-        XP: @Score
-    </div>
+<div class="game-wrapper">
+    @if (state == GameState.Start)
+    {
+        <div class="start-screen">
+            <div class="start-title">
+                <span class="title-lightning"></span>
+                <span class="title-text">QUICK MATH</span>
+            </div>
+            <div class="start-subtitle">Fast-Paced Mental Math</div>
+            <div class="start-rules">
+                <div class="rule">⏱ Solve before time runs out</div>
+                <div class="rule">🔥 Build streaks for bonus points</div>
+                <div class="rule">❤️ 3 lives - don't lose them all!</div>
+            </div>
+            <button class="start-btn" @onclick="StartGame">PLAY</button>
+        </div>
+    }
+    else if (state == GameState.Countdown)
+    {
+        <div class="countdown-screen">
+            <div class="countdown-number" key="@CountdownNumber">
+                @if (CountdownNumber > 0)
+                {
+                    <text>@CountdownNumber</text>
+                }
+                else
+                {
+                    <span class="go-text">GO!</span>
+                }
+            </div>
+        </div>
+    }
+    else if (state == GameState.GameOver)
+    {
+        <div class="gameover-screen">
+            <div class="gameover-title">GAME OVER</div>
+            <div class="final-stats">
+                <div class="final-stat">
+                    <div class="final-stat-value score-value">@Score</div>
+                    <div class="final-stat-label">SCORE</div>
+                </div>
+                <div class="final-stat">
+                    <div class="final-stat-value streak-value">@BestStreak</div>
+                    <div class="final-stat-label">BEST STREAK</div>
+                </div>
+                <div class="final-stat">
+                    <div class="final-stat-value qs-value">@QuestionsAnswered</div>
+                    <div class="final-stat-label">SOLVED</div>
+                </div>
+            </div>
+            <button class="start-btn" @onclick="StartGame">PLAY AGAIN</button>
+        </div>
+    }
+    else
+    {
+        <div class="game-hud">
+            <div class="hud-top">
+                <div class="hud-score">
+                    <span class="hud-label">SCORE</span>
+                    <span class="hud-value">@Score</span>
+                </div>
+                <div class="hud-streak">
+                    @if (Streak >= 3)
+                    {
+                        <span class="streak-fire">🔥</span>
+                        <span class="streak-value">x@(Streak)</span>
+                    }
+                </div>
+                <div class="hud-lives">
+                    @for (int i = 0; i < MaxLives; i++)
+                    {
+                        <span class="heart @(i < Lives ? "heart-full" : "heart-empty")">&#9829;</span>
+                    }
+                </div>
+            </div>
+            <div class="hud-topic-row">
+                <span class="hud-topic">@CurrentTopic</span>
+                <span class="hud-topic-level">Level @DifficultyLevel</span>
+            </div>
+            <div class="timer-track">
+                <div class="timer-fill" style="width: @TimerPercent%"></div>
+                <div class="timer-text">@TimeLeft</div>
+            </div>
+            <div class="question-area">
+                <div class="question-box">
+                    <span class="q-num">@Number1</span>
+                    <span class="q-op">@OperationSymbol</span>
+                    <span class="q-num">@Number2</span>
+                    <span class="q-eq">=</span>
+                    <span class="q-qm">?</span>
+                </div>
+                <div class="input-row">
+                     <input class="answer-input @(feedbackClass)"
+                            type="number"
+                            placeholder="?"
+                            @bind="UserAnswer"
+                            @bind:event="oninput"
+                            @ref="inputRef"
+                            autofocus
+                            spellcheck="false" />
+                </div>
+                @if (!string.IsNullOrEmpty(feedbackText))
+                {
+                    <div class="feedback @feedbackClass">@feedbackText</div>
+                }
+            </div>
+            <div class="hud-bottom">
+                <div class="difficulty-badge">@difficultyLabel</div>
+            </div>
+        </div>
+    }
 </div>
 
-<style>
-    .game-container {
-        max-width: 400px;
-        margin: 50px auto;
-        padding: 25px;
-        text-align: center;
-        border-radius: 12px;
-        background: #f4f4f4;
-        box-shadow: 0 4px 10px rgba(0,0,0,.15);
-        font-family: Arial, sans-serif;
-    }
-
-    .question {
-        font-size: 42px;
-        font-weight: bold;
-        margin: 25px 0;
-    }
-
-    .answer-input {
-        width: 100%;
-        padding: 12px;
-        font-size: 24px;
-        text-align: center;
-        border: 2px solid #ccc;
-        border-radius: 8px;
-        outline: none;
-    }
-
-        .answer-input:focus {
-            border-color: #4CAF50;
-        }
-
-    .score {
-        margin-top: 20px;
-        font-size: 24px;
-        font-weight: bold;
-        color: #4CAF50;
-    }
-</style>
-
 @code {
+    enum GameState { Start, Countdown, Playing, GameOver }
+    GameState state = GameState.Start;
+
     Random random = new();
+    System.Threading.Timer? gameTimer;
 
     int Number1;
     int Number2;
-    int Score;
+    int Answer;
+    string OperationSymbol = "+";
 
-    string userAnswer = "";
+    int Score;
+    int Streak;
+    int BestStreak;
+    int Lives = 3;
+    int MaxLives = 3;
+    int TimeLeft;
+    int MaxTime = 10;
+    int QuestionsAnswered;
+
+    int TimerPercent => MaxTime > 0 ? (int)((double)TimeLeft / MaxTime * 100) : 0;
+    int CountdownNumber = 3;
+    int DifficultyLevel = 1;
+    string difficultyLabel = "EASY";
+
+    string CurrentTopic => OperationSymbol switch
+    {
+        "+" => "Addition",
+        "-" => "Subtraction",
+        "×" => "Multiplication",
+        "÷" => "Division",
+        _ => "Math"
+    };
+
+    string? feedbackText;
+    string? feedbackClass;
+    string? userAnswer;
+    ElementReference inputRef;
 
     string UserAnswer
     {
-        get => userAnswer;
+        get => userAnswer ?? "";
         set
         {
             userAnswer = value;
-
-            if (int.TryParse(userAnswer, out int answer))
+            if (string.IsNullOrEmpty(userAnswer)) return;
+            if (state != GameState.Playing) return;
+            if (int.TryParse(userAnswer, out int ans) && ans == Answer)
             {
-                if (answer == Number1 + Number2)
-                {
-                    Score++;
-                    userAnswer = "";
-                    GenerateQuestion();
-                }
+                HandleCorrect();
             }
         }
     }
 
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        GenerateQuestion();
+        if (firstRender || state == GameState.Start)
+        {
+            _ = FocusInput();
+        }
+    }
+
+    async Task FocusInput()
+    {
+        await Task.Delay(100);
+        await inputRef.FocusAsync();
+    }
+
+    void StartGame()
+    {
+        Score = 0;
+        Streak = 0;
+        BestStreak = 0;
+        Lives = MaxLives;
+        QuestionsAnswered = 0;
+        DifficultyLevel = 1;
+        difficultyLabel = "EASY";
+        userAnswer = null;
+        feedbackText = null;
+        feedbackClass = null;
+        state = GameState.Countdown;
+        CountdownNumber = 3;
+        gameTimer?.Dispose();
+        gameTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(() =>
+            {
+                CountdownNumber--;
+                if (CountdownNumber < 0)
+                {
+                    state = GameState.Playing;
+                    GenerateQuestion();
+                    StartTimer();
+                    _ = FocusInput();
+                }
+                StateHasChanged();
+            });
+        }, null, 0, 1000);
+    }
+
+    void StartTimer()
+    {
+        gameTimer?.Dispose();
+        UpdateDifficulty();
+        TimeLeft = MaxTime;
+        gameTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(() =>
+            {
+                if (state != GameState.Playing) return;
+                TimeLeft--;
+                if (TimeLeft <= 0)
+                {
+                    HandleTimeUp();
+                }
+                StateHasChanged();
+            });
+        }, null, 1000, 1000);
+    }
+
+    void HandleTimeUp()
+    {
+        Lives--;
+        Streak = 0;
+        QuestionsAnswered++;
+        feedbackText = "⏰ Time's up!";
+        feedbackClass = "wrong";
+        ClearFeedbackAfterDelay();
+        if (Lives <= 0)
+        {
+            state = GameState.GameOver;
+            gameTimer?.Dispose();
+        }
+        else
+        {
+            userAnswer = null;
+            GenerateQuestion();
+            StartTimer();
+        }
+    }
+
+    void UpdateDifficulty()
+    {
+        if (Score < 50)
+        {
+            DifficultyLevel = 1;
+            MaxTime = 12;
+            difficultyLabel = "EASY";
+        }
+        else if (Score < 150)
+        {
+            DifficultyLevel = 2;
+            MaxTime = 10;
+            difficultyLabel = "MEDIUM";
+        }
+        else if (Score < 350)
+        {
+            DifficultyLevel = 3;
+            MaxTime = 8;
+            difficultyLabel = "HARD";
+        }
+        else
+        {
+            DifficultyLevel = 4;
+            MaxTime = 6;
+            difficultyLabel = "INSANE";
+        }
     }
 
     void GenerateQuestion()
     {
-        Number1 = random.Next(1, 21);
-        Number2 = random.Next(1, 21);
+        UpdateDifficulty();
+        int maxNum = DifficultyLevel switch
+        {
+            1 => 10,
+            2 => 15,
+            3 => 20,
+            _ => 30
+        };
+
+        if (DifficultyLevel == 1)
+        {
+            GenerateAddition(maxNum);
+        }
+        else
+        {
+            int opType = random.Next(0, DifficultyLevel switch
+            {
+                2 => 2,
+                3 => 3,
+                _ => 4
+            });
+            switch (opType)
+            {
+                case 0: GenerateAddition(maxNum); break;
+                case 1: GenerateSubtraction(maxNum); break;
+                case 2: GenerateMultiplication(maxNum); break;
+                case 3: GenerateDivision(maxNum); break;
+            }
+        }
+
+        feedbackText = null;
+        feedbackClass = null;
+    }
+
+    void GenerateAddition(int max)
+    {
+        Number1 = random.Next(1, max + 1);
+        Number2 = random.Next(1, max + 1);
+        Answer = Number1 + Number2;
+        OperationSymbol = "+";
+    }
+
+    void GenerateSubtraction(int max)
+    {
+        Number1 = random.Next(2, max + 1);
+        Number2 = random.Next(1, Number1);
+        Answer = Number1 - Number2;
+        OperationSymbol = "-";
+    }
+
+    void GenerateMultiplication(int max)
+    {
+        int limit = Math.Min(max / 2 + 1, 13);
+        Number1 = random.Next(1, limit + 1);
+        Number2 = random.Next(1, limit + 1);
+        Answer = Number1 * Number2;
+        OperationSymbol = "×";
+    }
+
+    void GenerateDivision(int max)
+    {
+        int limit = Math.Min(max / 2 + 1, 13);
+        Number2 = random.Next(1, limit + 1);
+        Answer = random.Next(1, limit + 1);
+        Number1 = Number2 * Answer;
+        OperationSymbol = "÷";
+    }
+
+    void HandleCorrect()
+    {
+        QuestionsAnswered++;
+        Streak++;
+        if (Streak > BestStreak) BestStreak = Streak;
+
+        int multiplier = Streak >= 10 ? 4 : Streak >= 7 ? 3 : Streak >= 4 ? 2 : 1;
+        int points = 10 * multiplier;
+        Score += points;
+
+        feedbackText = multiplier > 1 ? $"+{points} x{multiplier}!" : $"+{points}";
+        feedbackClass = "correct";
+        ClearFeedbackAfterDelay();
+
+        userAnswer = null;
+        GenerateQuestion();
+        StartTimer();
+    }
+
+    async void ClearFeedbackAfterDelay()
+    {
+        await Task.Delay(700);
+        await InvokeAsync(() =>
+        {
+            feedbackText = null;
+            feedbackClass = null;
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        gameTimer?.Dispose();
     }
 }
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    .game-wrapper {
+        font-family: 'Inter', system-ui, sans-serif;
+        min-height: calc(100vh - 7rem);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .game-wrapper::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--bg-page);
+        background-image:
+            radial-gradient(circle at 15% 30%, var(--primary-subtle) 0%, transparent 50%),
+            radial-gradient(circle at 85% 70%, var(--wrong-subtle) 0%, transparent 50%);
+        z-index: -2;
+    }
+
+    .game-wrapper::after {
+        content: '∑  π  √  ∫  ∞  ≈  ≠  α  β  θ  Δ  2²  3³  √x  x²  ∑  π  √  ∫  ∞';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Georgia', serif;
+        font-size: clamp(8rem, 20vw, 20rem);
+        font-weight: 700;
+        color: var(--primary-subtle);
+        letter-spacing: 0.3em;
+        line-height: 1.2;
+        text-align: center;
+        word-break: break-all;
+        z-index: -1;
+        pointer-events: none;
+        user-select: none;
+        padding: 2rem;
+    }
+
+    /* ===== START SCREEN ===== */
+    .start-screen {
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+        position: relative;
+    }
+
+    .start-screen::before {
+        content: '∑  π  √  ∫  ∞  ≈  ≠  α  β  θ  Δ';
+        position: absolute;
+        top: -3rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'Georgia', serif;
+        font-size: 0.9rem;
+        color: var(--primary-subtle);
+        letter-spacing: 0.4em;
+        white-space: nowrap;
+    }
+
+    .start-title {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+        color: var(--text);
+    }
+
+    .title-text {
+        color: var(--text);
+    }
+
+    .start-subtitle {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        font-style: italic;
+    }
+
+    .start-rules {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        align-items: center;
+    }
+
+    .rule {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        background: var(--bg-card);
+        padding: 0.5rem 1.2rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .start-btn {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 0.75rem 2.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        color: #fff;
+        background: var(--primary);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        letter-spacing: 0.01em;
+    }
+
+    .start-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35);
+        background: var(--primary-hover);
+    }
+
+    .start-btn:active {
+        transform: translateY(0);
+    }
+
+    /* ===== COUNTDOWN ===== */
+    .countdown-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50vh;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .countdown-number {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 7rem;
+        font-weight: 700;
+        color: var(--countdown-color);
+        animation: countPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .go-text {
+        font-size: 5rem;
+        color: var(--correct);
+    }
+
+    /* ===== GAME OVER ===== */
+    .gameover-screen {
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .gameover-title {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--gameover-title);
+        margin-bottom: 1.5rem;
+    }
+
+    .final-stats {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .final-stat {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        min-width: 90px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .final-stat-value {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+    }
+
+    .score-value { color: var(--primary); }
+    .streak-value { color: var(--streak); }
+    .qs-value { color: var(--correct); }
+
+    .final-stat-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* ===== GAME HUD ===== */
+    .game-hud {
+        width: 100%;
+        max-width: 480px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .hud-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .hud-score {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hud-label {
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .hud-value {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .hud-topic-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.4rem;
+    }
+
+    .hud-topic {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        background: var(--bg-card);
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid var(--border);
+    }
+
+    .hud-topic-level {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .hud-streak {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .streak-fire {
+        font-size: 1.3rem;
+    }
+
+    .streak-value {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--streak);
+    }
+
+    .hud-lives {
+        display: flex;
+        gap: 0.15rem;
+    }
+
+    .heart {
+        font-size: 1.3rem;
+        transition: all 0.3s ease;
+    }
+
+    .heart-full {
+        color: var(--wrong);
+    }
+
+    .heart-empty {
+        color: var(--border);
+    }
+
+    /* ===== TIMER ===== */
+    .timer-track {
+        position: relative;
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .timer-fill {
+        height: 100%;
+        border-radius: 3px;
+        background: var(--primary);
+        transition: width 0.95s linear;
+    }
+
+    .timer-text {
+        position: absolute;
+        right: 0;
+        top: -1.2rem;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* ===== QUESTION ===== */
+    .question-area {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .question-box {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 2.6rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        background: var(--bg-card);
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .q-num {
+        color: var(--text);
+    }
+
+    .q-op {
+        color: var(--primary);
+    }
+
+    .q-eq {
+        color: var(--text-muted);
+    }
+
+    .q-qm {
+        color: var(--primary);
+    }
+
+    .input-row {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .answer-input {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        width: 140px;
+        padding: 0.5rem;
+        text-align: center;
+        border: 2px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--bg-input);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        -moz-appearance: textfield;
+    }
+
+    .answer-input::-webkit-outer-spin-button,
+    .answer-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .answer-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .answer-input.correct {
+        border-color: var(--correct);
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+        animation: correctFlash 0.4s ease;
+    }
+
+    .answer-input.wrong {
+        border-color: var(--wrong);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+        animation: shake 0.35s ease;
+    }
+
+    .feedback {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        min-height: 1.8rem;
+        animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .feedback.correct {
+        color: var(--correct);
+    }
+
+    .feedback.wrong {
+        color: var(--wrong);
+    }
+
+    .hud-bottom {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .difficulty-badge {
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 0.25rem 1rem;
+        border-radius: 0.25rem;
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* ===== KEYFRAMES ===== */
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes countPop {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.15); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @@keyframes correctFlash {
+        0% { transform: scale(1); }
+        30% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+    }
+
+    @@keyframes popIn {
+        0% { transform: scale(0.5); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @@media (max-width: 640px) {
+        .start-title { font-size: 2rem; }
+        .question-box { font-size: 2rem; padding: 0.75rem 1rem; }
+        .answer-input { font-size: 1.6rem; width: 110px; }
+        .gameover-title { font-size: 1.8rem; }
+        .final-stat-value { font-size: 1.5rem; }
+        .final-stats { gap: 0.6rem; }
+        .final-stat { padding: 0.75rem 0.75rem; min-width: 70px; }
+        .countdown-number { font-size: 5rem; }
+    }
+</style>

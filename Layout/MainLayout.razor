@@ -1,11 +1,26 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
+
 <div class="page">
-    <div class="sidebar">
+    <div class="sidebar @(sidebarCollapsed ? "collapsed" : "")">
+        <div class="sidebar-header">
+            <button class="sidebar-toggle" @onclick="ToggleSidebar" title="Toggle sidebar">
+                <span class="toggle-icon">@(sidebarCollapsed ? "☰" : "✕")</span>
+            </button>
+            <a class="sidebar-brand" href="">QuickMath</a>
+        </div>
         <NavMenu />
     </div>
 
+    <button class="sidebar-show-btn @(sidebarCollapsed ? "visible" : "")" @onclick="ToggleSidebar" title="Show sidebar">
+        <span>☰</span>
+    </button>
+
     <main>
         <div class="top-row px-4">
+            <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
+                @(isDarkMode ? "☀️" : "🌙")
+            </button>
             <a href="https://github.com/Yel0w08/QuickMath/wiki" target="_blank">About</a>
         </div>
 
@@ -14,3 +29,32 @@
         </article>
     </main>
 </div>
+
+@code {
+    bool sidebarCollapsed;
+    bool isDarkMode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var saved = await JS.InvokeAsync<string>("__getTheme");
+            isDarkMode = saved == "dark";
+        }
+        catch
+        {
+            isDarkMode = false;
+        }
+    }
+
+    void ToggleSidebar()
+    {
+        sidebarCollapsed = !sidebarCollapsed;
+    }
+
+    async Task ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+        await JS.InvokeVoidAsync("__setTheme", isDarkMode ? "dark" : "light");
+    }
+}
