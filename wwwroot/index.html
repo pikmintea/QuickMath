@@ -30,7 +30,13 @@
         window.__getTheme = function() {
             try { return localStorage.getItem('quickmath-theme') || 'light'; } catch(e) { return 'light'; }
         };
+        window.__storage = {
+            get: function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
+            set: function(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
+            remove: function(k) { try { localStorage.removeItem(k); } catch(e) {} }
+        };
     </script>
+    <script src="js/app.js"></script>
 </head>
 
 <body>

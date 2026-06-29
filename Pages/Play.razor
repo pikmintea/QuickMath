@@ -1,27 +1,73 @@
 ﻿@page "/play"
 @implements IDisposable
+@inject IJSRuntime JS
+@inject StatsService Stats
 
 <div class="game-wrapper">
-    @if (state == GameState.Start)
+    @if (state == GameState.Setup)
     {
-        <div class="start-screen">
-            <div class="start-title">
-                <span class="title-lightning"></span>
-                <span class="title-text">QUICK MATH</span>
+        <div class="setup-screen">
+            <div class="setup-scroll">
+                <h2 class="setup-heading">Game Setup</h2>
+
+                <div class="setup-section">
+                    <span class="setup-label">Topic</span>
+                    <div class="setup-chips">
+                        @foreach (var opt in topicOptions)
+                        {
+                            <button class="chip @(selectedTopic == opt.Value ? "active" : "")"
+                                    @onclick="() => selectedTopic = opt.Value"
+                                    aria-pressed="@(selectedTopic == opt.Value)">
+                                @opt.Label
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <span class="setup-label">Mode</span>
+                    <div class="setup-chips">
+                        @foreach (var opt in modeOptions)
+                        {
+                            <button class="chip @(selectedMode == opt.Value ? "active" : "")"
+                                    @onclick="() => selectedMode = opt.Value"
+                                    aria-pressed="@(selectedMode == opt.Value)">
+                                @opt.Label
+                            </button>
+                        }
+                    </div>
+                    @if (selectedMode == GameMode.Custom)
+                    {
+                        <div class="setup-inline">
+                            <input class="setup-num" type="number" @bind="customCount" min="5" max="100" aria-label="Custom question count" />
+                            <span class="setup-inline-label">questions</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="setup-section">
+                    <span class="setup-label">Difficulty</span>
+                    <div class="setup-chips">
+                        @foreach (var opt in diffOptions)
+                        {
+                            <button class="chip @(selectedDifficulty == opt.Value ? "active" : "")"
+                                    @onclick="() => selectedDifficulty = opt.Value"
+                                    aria-pressed="@(selectedDifficulty == opt.Value)">
+                                @opt.Label
+                            </button>
+                        }
+                    </div>
+                    <div class="setup-diff-note">@difficultyNote</div>
+                </div>
+
+                <button class="start-btn" @onclick="StartGame">PLAY</button>
             </div>
-            <div class="start-subtitle">Fast-Paced Mental Math</div>
-            <div class="start-rules">
-                <div class="rule">⏱ Solve before time runs out</div>
-                <div class="rule">🔥 Build streaks for bonus points</div>
-                <div class="rule">❤️ 3 lives - don't lose them all!</div>
-            </div>
-            <button class="start-btn" @onclick="StartGame">PLAY</button>
         </div>
     }
     else if (state == GameState.Countdown)
     {
         <div class="countdown-screen">
-            <div class="countdown-number" key="@CountdownNumber">
+            <div class="countdown-number" @key="@CountdownNumber" aria-live="assertive">
                 @if (CountdownNumber > 0)
                 {
                     <text>@CountdownNumber</text>
@@ -51,14 +97,15 @@
                     <div class="final-stat-label">SOLVED</div>
                 </div>
             </div>
-            <button class="start-btn" @onclick="StartGame">PLAY AGAIN</button>
+            <button class="start-btn" @onclick="BackToSetup">SETUP</button>
+            <button class="start-btn secondary" @onclick="StartGame">PLAY AGAIN</button>
         </div>
     }
     else
     {
         <div class="game-hud">
             <div class="hud-top">
-                <div class="hud-score">
+                <div class="hud-score" role="status" aria-label="Score @Score">
                     <span class="hud-label">SCORE</span>
                     <span class="hud-value">@Score</span>
                 </div>
@@ -69,23 +116,38 @@
                         <span class="streak-value">x@(Streak)</span>
                     }
                 </div>
-                <div class="hud-lives">
-                    @for (int i = 0; i < MaxLives; i++)
-                    {
-                        <span class="heart @(i < Lives ? "heart-full" : "heart-empty")">&#9829;</span>
-                    }
-                </div>
+                @if (showLives)
+                {
+                    <div class="hud-lives" role="status" aria-label="@Lives lives remaining">
+                        @for (int i = 0; i < MaxLives; i++)
+                        {
+                            <span class="heart @(i < Lives ? "heart-full" : "heart-empty")">&#9829;</span>
+                        }
+                    </div>
+                }
             </div>
             <div class="hud-topic-row">
                 <span class="hud-topic">@CurrentTopic</span>
-                <span class="hud-topic-level">Level @DifficultyLevel</span>
+                <span class="hud-topic-level">
+                    @modeLabel · @difficultyLabel
+                </span>
             </div>
-            <div class="timer-track">
-                <div class="timer-fill" style="width: @TimerPercent%"></div>
-                <div class="timer-text">@TimeLeft</div>
-            </div>
+            @if (showPerQuestionTimer)
+            {
+                <div class="timer-track" role="status" aria-label="@TimeLeft seconds remaining">
+                    <div class="timer-fill" style="width: @TimerPercent%"></div>
+                    <div class="timer-text">@TimeLeft</div>
+                </div>
+            }
+            else
+            {
+                <div class="timer-track total" role="status" aria-label="@TotalTimeLeft seconds remaining">
+                    <div class="timer-fill" style="width: @TotalTimerPercent%"></div>
+                    <div class="timer-text">@TotalTimeLeft s</div>
+                </div>
+            }
             <div class="question-area">
-                <div class="question-box">
+                <div class="question-box" @key="@questionKey">
                     <span class="q-num">@Number1</span>
                     <span class="q-op">@OperationSymbol</span>
                     <span class="q-num">@Number2</span>
@@ -96,6 +158,7 @@
                      <input class="answer-input @(feedbackClass)"
                             type="number"
                             placeholder="?"
+                            aria-label="Enter your answer"
                             @bind="UserAnswer"
                             @bind:event="oninput"
                             @ref="inputRef"
@@ -104,22 +167,91 @@
                 </div>
                 @if (!string.IsNullOrEmpty(feedbackText))
                 {
-                    <div class="feedback @feedbackClass">@feedbackText</div>
+                    <div class="feedback @feedbackClass" aria-live="polite" role="status">@feedbackText</div>
                 }
             </div>
             <div class="hud-bottom">
-                <div class="difficulty-badge">@difficultyLabel</div>
+                @if (showQuestionCounter)
+                {
+                    <div class="q-counter">@QuestionsAnswered / @questionLimitText</div>
+                }
             </div>
         </div>
     }
 </div>
 
 @code {
-    enum GameState { Start, Countdown, Playing, GameOver }
-    GameState state = GameState.Start;
+    enum GameState { Setup, Countdown, Playing, GameOver }
+    enum TopicFilter { All, Addition, Subtraction, Multiplication, Division }
+    enum GameMode { Infinite, TwentyQuestions, OneMinute, Custom }
+    enum Difficulty { SuperEasy, Easy, Medium, Hard }
 
+    // ─── Setup options ───
+    TopicFilter selectedTopic = TopicFilter.All;
+    GameMode selectedMode = GameMode.Infinite;
+    Difficulty selectedDifficulty = Difficulty.Easy;
+    int customCount = 20;
+
+    record Chip<T>(string Label, T Value);
+
+    Chip<TopicFilter>[] topicOptions = new[] {
+        new Chip<TopicFilter>("All", TopicFilter.All),
+        new Chip<TopicFilter>("+", TopicFilter.Addition),
+        new Chip<TopicFilter>("−", TopicFilter.Subtraction),
+        new Chip<TopicFilter>("×", TopicFilter.Multiplication),
+        new Chip<TopicFilter>("÷", TopicFilter.Division),
+    };
+
+    Chip<GameMode>[] modeOptions = new[] {
+        new Chip<GameMode>("Infinite", GameMode.Infinite),
+        new Chip<GameMode>("20 Qs", GameMode.TwentyQuestions),
+        new Chip<GameMode>("1 Min", GameMode.OneMinute),
+        new Chip<GameMode>("Custom", GameMode.Custom),
+    };
+
+    Chip<Difficulty>[] diffOptions = new[] {
+        new Chip<Difficulty>("Super Easy", Difficulty.SuperEasy),
+        new Chip<Difficulty>("Easy", Difficulty.Easy),
+        new Chip<Difficulty>("Medium", Difficulty.Medium),
+        new Chip<Difficulty>("Hard", Difficulty.Hard),
+    };
+
+    string difficultyNote => selectedDifficulty switch
+    {
+        Difficulty.SuperEasy => "Numbers 1–10 · Reduced XP",
+        Difficulty.Easy => "Numbers 1–15",
+        Difficulty.Medium => "Numbers 1–25",
+        Difficulty.Hard => "Numbers 1–40 · Bonus XP",
+        _ => ""
+    };
+
+    // ─── Derived mode flags ───
+    bool showLives => selectedMode != GameMode.OneMinute;
+    bool showPerQuestionTimer => selectedMode != GameMode.OneMinute;
+    bool showQuestionCounter => selectedMode is GameMode.TwentyQuestions or GameMode.Custom;
+    bool hasQuestionLimit => selectedMode is GameMode.TwentyQuestions or GameMode.Custom;
+    int questionLimit => selectedMode switch
+    {
+        GameMode.TwentyQuestions => 20,
+        GameMode.Custom => customCount,
+        _ => int.MaxValue
+    };
+    string questionLimitText => selectedMode == GameMode.Custom ? $"{customCount}" : "20";
+
+    string modeLabel => selectedMode switch
+    {
+        GameMode.Infinite => "Infinite",
+        GameMode.TwentyQuestions => "20 Qs",
+        GameMode.OneMinute => "1 Min Rush",
+        GameMode.Custom => $"{customCount} Qs",
+        _ => ""
+    };
+
+    // ─── Game state ───
+    GameState state = GameState.Setup;
     Random random = new();
     System.Threading.Timer? gameTimer;
+    Guid gameId = Guid.NewGuid();
 
     int Number1;
     int Number2;
@@ -133,12 +265,19 @@
     int MaxLives = 3;
     int TimeLeft;
     int MaxTime = 10;
+    int TotalTimeLeft;
+    int TotalTimeMax = 60;
     int QuestionsAnswered;
+    int totalWrong;
+    int baseXp = 10;
 
     int TimerPercent => MaxTime > 0 ? (int)((double)TimeLeft / MaxTime * 100) : 0;
+    int TotalTimerPercent => TotalTimeMax > 0 ? (int)((double)TotalTimeLeft / TotalTimeMax * 100) : 0;
     int CountdownNumber = 3;
-    int DifficultyLevel = 1;
     string difficultyLabel = "EASY";
+    string questionKey => $"{Number1}{OperationSymbol}{Number2}";
+
+    bool gameOverRecorded;
 
     string CurrentTopic => OperationSymbol switch
     {
@@ -171,16 +310,23 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender || state == GameState.Start)
+        if (firstRender || state == GameState.Setup)
         {
             _ = FocusInput();
         }
     }
 
+    void BackToSetup()
+    {
+        gameTimer?.Dispose();
+        gameTimer = null;
+        state = GameState.Setup;
+    }
+
     async Task FocusInput()
     {
         await Task.Delay(100);
-        await inputRef.FocusAsync();
+        try { await inputRef.FocusAsync(); } catch { }
     }
 
     void StartGame()
@@ -190,11 +336,31 @@
         BestStreak = 0;
         Lives = MaxLives;
         QuestionsAnswered = 0;
-        DifficultyLevel = 1;
-        difficultyLabel = "EASY";
+        totalWrong = 0;
         userAnswer = null;
         feedbackText = null;
         feedbackClass = null;
+        gameOverRecorded = false;
+        gameId = Guid.NewGuid();
+
+        (baseXp, difficultyLabel) = selectedDifficulty switch
+        {
+            Difficulty.SuperEasy => (5, "SUPER EASY"),
+            Difficulty.Easy => (10, "EASY"),
+            Difficulty.Medium => (15, "MEDIUM"),
+            Difficulty.Hard => (25, "HARD"),
+            _ => (10, "EASY")
+        };
+
+        MaxTime = selectedDifficulty switch
+        {
+            Difficulty.SuperEasy => 15,
+            Difficulty.Easy => 12,
+            Difficulty.Medium => 10,
+            Difficulty.Hard => 7,
+            _ => 12
+        };
+
         state = GameState.Countdown;
         CountdownNumber = 3;
         gameTimer?.Dispose();
@@ -202,118 +368,144 @@
         {
             await InvokeAsync(() =>
             {
+                if (state != GameState.Countdown) return;
+                var prev = CountdownNumber;
                 CountdownNumber--;
+                if (prev > 0 && CountdownNumber > 0)
+                {
+                    _ = PlaySound("countdownTick");
+                }
                 if (CountdownNumber < 0)
                 {
                     state = GameState.Playing;
                     GenerateQuestion();
                     StartTimer();
+                    _ = PlaySound("countdownGo");
                     _ = FocusInput();
-                }
-                StateHasChanged();
-            });
-        }, null, 0, 1000);
-    }
-
-    void StartTimer()
-    {
-        gameTimer?.Dispose();
-        UpdateDifficulty();
-        TimeLeft = MaxTime;
-        gameTimer = new System.Threading.Timer(async _ =>
-        {
-            await InvokeAsync(() =>
-            {
-                if (state != GameState.Playing) return;
-                TimeLeft--;
-                if (TimeLeft <= 0)
-                {
-                    HandleTimeUp();
                 }
                 StateHasChanged();
             });
         }, null, 1000, 1000);
     }
 
+    void StartTimer()
+    {
+        gameTimer?.Dispose();
+
+        if (selectedMode == GameMode.OneMinute)
+        {
+            TotalTimeLeft = TotalTimeMax;
+            gameTimer = new System.Threading.Timer(async _ =>
+            {
+                await InvokeAsync(() =>
+                {
+                    if (state != GameState.Playing) return;
+                    TotalTimeLeft--;
+                    if (TotalTimeLeft <= 0)
+                    {
+                        state = GameState.GameOver;
+                        gameTimer?.Dispose();
+                        _ = OnGameOver();
+                    }
+                    StateHasChanged();
+                });
+            }, null, 1000, 1000);
+        }
+        else
+        {
+            TimeLeft = MaxTime;
+            gameTimer = new System.Threading.Timer(async _ =>
+            {
+                await InvokeAsync(() =>
+                {
+                    if (state != GameState.Playing) return;
+                    TimeLeft--;
+                    if (TimeLeft <= 0)
+                    {
+                        HandleTimeUp();
+                    }
+                    StateHasChanged();
+                });
+            }, null, 1000, 1000);
+        }
+    }
+
     void HandleTimeUp()
     {
-        Lives--;
+        if (state != GameState.Playing) return;
+        totalWrong++;
+        if (showLives)
+        {
+            Lives--;
+        }
         Streak = 0;
         QuestionsAnswered++;
+        int snapScore = Score;
+        int snapStreak = BestStreak;
+        _ = Stats.UpdatePartialAsync(0, 1, 0, snapScore, snapStreak);
         feedbackText = "⏰ Time's up!";
         feedbackClass = "wrong";
-        ClearFeedbackAfterDelay();
-        if (Lives <= 0)
+        _ = PlaySound("wrong");
+        _ = ClearFeedbackAfterDelay();
+
+        bool dead = showLives && Lives <= 0;
+        bool limitReached = hasQuestionLimit && QuestionsAnswered >= questionLimit;
+
+        if (dead || limitReached)
         {
             state = GameState.GameOver;
             gameTimer?.Dispose();
+            _ = PlaySound("gameOver");
+            _ = OnGameOver();
         }
         else
         {
             userAnswer = null;
             GenerateQuestion();
             StartTimer();
+            _ = FocusInput();
         }
     }
 
-    void UpdateDifficulty()
+    void PickMaxNum(out int maxNum, out int opCount)
     {
-        if (Score < 50)
+        int max, ops;
+        switch (selectedDifficulty)
         {
-            DifficultyLevel = 1;
-            MaxTime = 12;
-            difficultyLabel = "EASY";
+            case Difficulty.SuperEasy: max = 10; ops = 1; break;
+            case Difficulty.Easy: max = 15; ops = 2; break;
+            case Difficulty.Medium: max = 25; ops = 3; break;
+            default: max = 40; ops = 4; break;
         }
-        else if (Score < 150)
-        {
-            DifficultyLevel = 2;
-            MaxTime = 10;
-            difficultyLabel = "MEDIUM";
-        }
-        else if (Score < 350)
-        {
-            DifficultyLevel = 3;
-            MaxTime = 8;
-            difficultyLabel = "HARD";
-        }
-        else
-        {
-            DifficultyLevel = 4;
-            MaxTime = 6;
-            difficultyLabel = "INSANE";
-        }
+        maxNum = max;
+        opCount = ops;
+    }
+
+    bool IsOpAllowed(int opIndex)
+    {
+        if (selectedTopic == TopicFilter.All) return true;
+        return (int)selectedTopic - 1 == opIndex;
     }
 
     void GenerateQuestion()
     {
-        UpdateDifficulty();
-        int maxNum = DifficultyLevel switch
-        {
-            1 => 10,
-            2 => 15,
-            3 => 20,
-            _ => 30
-        };
+        int maxNum, opCount;
+        PickMaxNum(out maxNum, out opCount);
 
-        if (DifficultyLevel == 1)
+        var allowed = new List<int>();
+        for (int i = 0; i < opCount; i++)
+            if (IsOpAllowed(i)) allowed.Add(i);
+
+        if (allowed.Count == 0) allowed.Add(0);
+
+        int op = allowed[random.Next(allowed.Count)];
+
+        switch (op)
         {
-            GenerateAddition(maxNum);
-        }
-        else
-        {
-            int opType = random.Next(0, DifficultyLevel switch
-            {
-                2 => 2,
-                3 => 3,
-                _ => 4
-            });
-            switch (opType)
-            {
-                case 0: GenerateAddition(maxNum); break;
-                case 1: GenerateSubtraction(maxNum); break;
-                case 2: GenerateMultiplication(maxNum); break;
-                case 3: GenerateDivision(maxNum); break;
-            }
+            case 0: GenerateAddition(maxNum); break;
+            case 1: GenerateSubtraction(maxNum); break;
+            case 2: GenerateMultiplication(maxNum); break;
+            case 3: GenerateDivision(maxNum); break;
         }
 
         feedbackText = null;
@@ -356,32 +548,88 @@
 
     void HandleCorrect()
     {
+        if (state != GameState.Playing) return;
         QuestionsAnswered++;
         Streak++;
         if (Streak > BestStreak) BestStreak = Streak;
 
         int multiplier = Streak >= 10 ? 4 : Streak >= 7 ? 3 : Streak >= 4 ? 2 : 1;
-        int points = 10 * multiplier;
+        int points = baseXp * multiplier;
+
+        if (multiplier > 1 && Streak >= 4 && (Streak == 4 || Streak == 7 || Streak == 10))
+        {
+            _ = PlaySound("streak", multiplier);
+            _ = TriggerConfetti();
+        }
+        else
+        {
+            _ = PlaySound("correct");
+        }
+
         Score += points;
+
+        int snapScore = Score;
+        int snapStreak = BestStreak;
+        _ = Stats.UpdatePartialAsync(1, 0, points, snapScore, snapStreak);
 
         feedbackText = multiplier > 1 ? $"+{points} x{multiplier}!" : $"+{points}";
         feedbackClass = "correct";
-        ClearFeedbackAfterDelay();
+        _ = ClearFeedbackAfterDelay();
+
+        if (hasQuestionLimit && QuestionsAnswered >= questionLimit)
+        {
+            state = GameState.GameOver;
+            gameTimer?.Dispose();
+            _ = PlaySound("gameOver");
+            _ = OnGameOver();
+            return;
+        }
 
         userAnswer = null;
         GenerateQuestion();
-        StartTimer();
+        _ = FocusInput();
+
+        if (selectedMode != GameMode.OneMinute)
+        {
+            StartTimer();
+        }
     }
 
-    async void ClearFeedbackAfterDelay()
+    async Task ClearFeedbackAfterDelay()
     {
         await Task.Delay(700);
-        await InvokeAsync(() =>
+        try { await InvokeAsync(() => { feedbackText = null; feedbackClass = null; StateHasChanged(); }); }
+        catch { }
+    }
+
+    async Task PlaySound(string kind, int? level = null)
+    {
+        try
         {
-            feedbackText = null;
-            feedbackClass = null;
-            StateHasChanged();
-        });
+            switch (kind)
+            {
+                case "correct": await JS.InvokeVoidAsync("__sound.correct"); break;
+                case "wrong": await JS.InvokeVoidAsync("__sound.wrong"); break;
+                case "gameOver": await JS.InvokeVoidAsync("__sound.gameOver"); break;
+                case "streak": await JS.InvokeVoidAsync("__sound.streak", level ?? 2); break;
+                case "countdownTick": await JS.InvokeVoidAsync("__sound.countdownTick"); break;
+                case "countdownGo": await JS.InvokeVoidAsync("__sound.countdownGo"); break;
+            }
+        }
+        catch { }
+    }
+
+    async Task TriggerConfetti()
+    {
+        try { await JS.InvokeVoidAsync("__effects.confetti", 25); }
+        catch { }
+    }
+
+    async Task OnGameOver()
+    {
+        if (gameOverRecorded) return;
+        gameOverRecorded = true;
+        await Stats.IncrementGamesPlayedAsync();
     }
 
     public void Dispose()
@@ -437,61 +685,115 @@
         padding: 2rem;
     }
 
-    /* ===== START SCREEN ===== */
-    .start-screen {
-        text-align: center;
-        animation: fadeIn 0.5s ease;
+    /* ===== SETUP SCREEN ===== */
+    .setup-screen {
+        width: 100%;
+        max-width: 420px;
+        animation: fadeIn 0.4s ease;
         position: relative;
     }
 
-    .start-screen::before {
-        content: '∑  π  √  ∫  ∞  ≈  ≠  α  β  θ  Δ';
-        position: absolute;
-        top: -3rem;
-        left: 50%;
-        transform: translateX(-50%);
-        font-family: 'Georgia', serif;
-        font-size: 0.9rem;
-        color: var(--primary-subtle);
-        letter-spacing: 0.4em;
-        white-space: nowrap;
+    .setup-scroll {
+        max-height: calc(100vh - 10rem);
+        overflow-y: auto;
+        padding: 0.25rem 0;
     }
 
-    .start-title {
+    .setup-heading {
         font-family: 'Georgia', 'Times New Roman', serif;
-        font-size: 2.8rem;
+        font-size: 1.6rem;
         font-weight: 700;
-        margin-bottom: 0.3rem;
         color: var(--text);
+        text-align: center;
+        margin: 0 0 1.5rem;
     }
 
-    .title-text {
-        color: var(--text);
+    .setup-section {
+        margin-bottom: 1.25rem;
     }
 
-    .start-subtitle {
-        font-size: 1rem;
-        color: var(--text-secondary);
-        margin-bottom: 2rem;
-        font-style: italic;
+    .setup-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.5rem;
     }
 
-    .start-rules {
+    .setup-chips {
         display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-bottom: 2rem;
-        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
     }
 
-    .rule {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        background: var(--bg-card);
-        padding: 0.5rem 1.2rem;
-        border-radius: 0.5rem;
+    .chip {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 0.45rem 1rem;
+        border-radius: 0.4rem;
         border: 1px solid var(--border);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .chip:hover {
+        border-color: var(--primary);
+        color: var(--text);
+    }
+
+    .chip.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+    .setup-inline {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+    }
+
+    .setup-num {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 1rem;
+        font-weight: 600;
+        width: 70px;
+        padding: 0.3rem 0.5rem;
+        text-align: center;
+        border: 1px solid var(--border);
+        border-radius: 0.35rem;
+        background: var(--bg-input);
+        color: var(--text);
+        outline: none;
+        -moz-appearance: textfield;
+    }
+
+    .setup-num::-webkit-outer-spin-button,
+    .setup-num::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .setup-num:focus {
+        border-color: var(--primary);
+    }
+
+    .setup-inline-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .setup-diff-note {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.4rem;
+        font-style: italic;
     }
 
     .start-btn {
@@ -506,7 +808,8 @@
         background: var(--primary);
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
         transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-        letter-spacing: 0.01em;
+        width: 100%;
+        display: block;
     }
 
     .start-btn:hover {
@@ -517,6 +820,25 @@
 
     .start-btn:active {
         transform: translateY(0);
+    }
+
+    .start-btn.secondary {
+        background: var(--bg-card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        box-shadow: none;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+        width: auto;
+        display: inline-block;
+    }
+
+    .start-btn.secondary:hover {
+        background: var(--bg-hover);
+        border-color: var(--text-muted);
+        transform: none;
+        box-shadow: none;
     }
 
     /* ===== COUNTDOWN ===== */
@@ -618,6 +940,7 @@
         font-size: 1.4rem;
         font-weight: 700;
         color: var(--text);
+        transition: transform 0.15s ease;
     }
 
     .hud-topic-row {
@@ -689,6 +1012,10 @@
         overflow: hidden;
     }
 
+    .timer-track.total {
+        margin-bottom: 0.5rem;
+    }
+
     .timer-fill {
         height: 100%;
         border-radius: 3px;
@@ -726,6 +1053,7 @@
         border-radius: 0.75rem;
         border: 1px solid var(--border);
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        animation: questionIn 0.25s ease;
     }
 
     .q-num {
@@ -811,16 +1139,10 @@
         margin-top: 1rem;
     }
 
-    .difficulty-badge {
-        font-size: 0.65rem;
+    .q-counter {
+        font-size: 0.75rem;
+        color: var(--text-muted);
         font-weight: 500;
-        padding: 0.25rem 1rem;
-        border-radius: 0.25rem;
-        background: var(--bg-card);
-        color: var(--text-secondary);
-        border: 1px solid var(--border);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
     }
 
     /* ===== KEYFRAMES ===== */
@@ -854,8 +1176,13 @@
         100% { transform: scale(1); opacity: 1; }
     }
 
+    @@keyframes questionIn {
+        from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     @@media (max-width: 640px) {
-        .start-title { font-size: 2rem; }
+        .setup-heading { font-size: 1.3rem; }
         .question-box { font-size: 2rem; padding: 0.75rem 1rem; }
         .answer-input { font-size: 1.6rem; width: 110px; }
         .gameover-title { font-size: 1.8rem; }

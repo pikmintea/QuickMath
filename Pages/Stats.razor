@@ -1,0 +1,367 @@
+@page "/stats"
+@inject StatsService StatsSvc
+
+<PageTitle>Stats - Quick Math</PageTitle>
+
+<div class="stats-page">
+    <div class="stats-card">
+        <h2 class="stats-title">My Stats</h2>
+
+        <div class="username-section">
+            <label for="username-input" class="username-label">Username</label>
+            <div class="username-row">
+                <input id="username-input"
+                       class="username-input"
+                       type="text"
+                       @bind="username"
+                       maxlength="20"
+                       placeholder="Enter your name" />
+                <button class="username-save" @onclick="SaveUsername" title="Save username">Save</button>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="stats-loading">Loading...</div>
+        }
+        else
+        {
+            <div class="xp-section">
+                <div class="xp-number">@stats.TotalXp</div>
+                <div class="xp-label">TOTAL XP</div>
+                <div class="xp-bar-track">
+                    <div class="xp-bar-fill" style="width: @XpPercent%"></div>
+                </div>
+                <div class="xp-next">@xpNextLabel</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-cell">
+                    <div class="stat-value">@stats.GamesPlayed</div>
+                    <div class="stat-name">Games</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="stat-value">@totalQuestions</div>
+                    <div class="stat-name">Questions</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="stat-value">@accuracy%</div>
+                    <div class="stat-name">Accuracy</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="stat-value best">@stats.BestScore</div>
+                    <div class="stat-name">Best Score</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="stat-value streak">@stats.BestStreak</div>
+                    <div class="stat-name">Best Streak</div>
+                </div>
+            </div>
+
+            <button class="stats-reset" @onclick="ResetStats">Reset All Data</button>
+        }
+    </div>
+</div>
+
+@code {
+    GameStats stats = new();
+    string username = "";
+    bool isLoading = true;
+
+    int totalQuestions => stats.TotalCorrect + stats.TotalWrong;
+    int accuracy => totalQuestions > 0 ? (int)((double)stats.TotalCorrect / totalQuestions * 100) : 0;
+
+    int XpLevel => stats.TotalXp switch
+    {
+        < 100 => 1,
+        < 300 => 2,
+        < 600 => 3,
+        < 1000 => 4,
+        < 1500 => 5,
+        < 2100 => 6,
+        < 2800 => 7,
+        < 3600 => 8,
+        < 4500 => 9,
+        _ => 10
+    };
+
+    int XpForLevel(int level) => level switch
+    {
+        1 => 0, 2 => 100, 3 => 300, 4 => 600, 5 => 1000,
+        6 => 1500, 7 => 2100, 8 => 2800, 9 => 3600, 10 => 4500,
+        _ => 4500 + (level - 10) * 1000
+    };
+
+    int XpPercent
+    {
+        get
+        {
+            int cur = XpForLevel(XpLevel);
+            int next = XpForLevel(XpLevel + 1);
+            int range = next - cur;
+            if (range <= 0) return 100;
+            return (int)((double)(stats.TotalXp - cur) / range * 100);
+        }
+    }
+
+    string xpNextLabel
+    {
+        get
+        {
+            int cur = XpForLevel(XpLevel);
+            int next = XpForLevel(XpLevel + 1);
+            int toNext = next - stats.TotalXp;
+            return $"{XpLevel} → {XpLevel + 1} · {toNext} XP to go";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStats();
+    }
+
+    async Task LoadStats()
+    {
+        isLoading = true;
+        try
+        {
+            stats = await StatsSvc.GetAsync();
+            username = stats.Username;
+        }
+        catch
+        {
+            stats = new();
+            username = stats.Username;
+        }
+        isLoading = false;
+    }
+
+    async Task SaveUsername()
+    {
+        var trimmed = (username ?? "").Trim();
+        if (string.IsNullOrEmpty(trimmed)) trimmed = "Player";
+        username = trimmed;
+        await StatsSvc.UpdateUsernameAsync(username);
+    }
+
+    async Task ResetStats()
+    {
+        await StatsSvc.ResetAsync();
+        stats = new();
+        username = stats.Username;
+    }
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    .stats-page {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: calc(100vh - 10rem);
+        font-family: 'Inter', system-ui, sans-serif;
+        padding-top: 1rem;
+    }
+
+    .stats-card {
+        width: 100%;
+        max-width: 480px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 2rem 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        animation: fadeIn 0.4s ease;
+    }
+
+    .stats-title {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 1.25rem;
+        text-align: center;
+    }
+
+    .stats-loading {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 2rem;
+    }
+
+    /* ===== USERNAME ===== */
+    .username-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .username-label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.4rem;
+    }
+
+    .username-row {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .username-input {
+        flex: 1;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 0.45rem 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: 0.35rem;
+        background: var(--bg-input);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .username-input:focus {
+        border-color: var(--primary);
+    }
+
+    .username-save {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 0.45rem 1rem;
+        border: 1px solid var(--primary);
+        border-radius: 0.35rem;
+        background: var(--primary);
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .username-save:hover {
+        background: var(--primary-hover);
+    }
+
+    /* ===== XP ===== */
+    .xp-section {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        padding: 1.25rem;
+        background: var(--primary-subtle);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+    }
+
+    .xp-number {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 0.15rem;
+    }
+
+    .xp-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        margin-bottom: 0.75rem;
+    }
+
+    .xp-bar-track {
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+
+    .xp-bar-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 3px;
+        transition: width 0.4s ease;
+    }
+
+    .xp-next {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-cell {
+        text-align: center;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 0.4rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .stat-value {
+        font-family: 'Georgia', 'Times New Roman', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.15rem;
+    }
+
+    .stat-value.best {
+        color: var(--primary);
+    }
+
+    .stat-value.streak {
+        color: var(--streak);
+    }
+
+    .stat-name {
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stats-reset {
+        display: block;
+        margin: 0 auto;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 0.3rem;
+        padding: 0.35rem 1rem;
+        cursor: pointer;
+        transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .stats-reset:hover {
+        color: var(--wrong);
+        border-color: var(--wrong);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (max-width: 640px) {
+        .stats-card { padding: 1.5rem 1rem; }
+        .stats-title { font-size: 1.2rem; }
+        .xp-number { font-size: 2.2rem; }
+        .stat-value { font-size: 1.1rem; }
+        .stats-grid { gap: 0.35rem; }
+    }
+</style>

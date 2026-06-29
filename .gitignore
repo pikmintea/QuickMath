@@ -9,3 +9,5 @@
 /obj/Debug
 /obj
 /.vs
+/bin/Release/net10.0/browser-wasm
+/bin
