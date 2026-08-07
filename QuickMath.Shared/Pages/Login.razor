@@ -1,0 +1,22 @@
+﻿@page "/login"
+@inject NavigationManager Navigation
+<h3>QuickMath — Sign in</h3>
+
+<button @onclick="SignInWithGoogle">Sign in / Login with Google</button>
+<button @onclick="PlayAsGuest">No thanks, I'll play as a guest</button>
+
+
+@code {
+    private async void SignInWithGoogle()
+    {
+        
+
+    }
+    private void PlayAsGuest()
+    {
+
+        Navigation.NavigateTo("/practice");
+       
+    }
+
+}
