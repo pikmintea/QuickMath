@@ -5,6 +5,15 @@ namespace QuickMath.Services
 {
     public class GoogleAuthService : IGoogleAuthService
     {
+<<<<<<< HEAD
+
+        private const string WebClientId = Secrets.GoogleWebClientId;
+        private const string DesktopClientId = Secrets.GoogleDesktopClientId;
+        private const string DesktopClientSecret = Secrets.GoogleDesktopClientSecret;
+        private const string FirebaseWebApiKey = Secrets.FirebaseWebApiKey;
+
+=======
+>>>>>>> parent of f287083 (yes)
         public async Task<string?> SignInAsync()
         {
             System.Diagnostics.Debug.WriteLine("SignInAsync called");

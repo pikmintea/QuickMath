@@ -6,3 +6,4 @@
 /QuickMath.Shared/bin
 /QuickMath/bin
 QuickMath/Platforms/Android/google-services.json
+QuickMath/Secrets.cs
