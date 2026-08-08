@@ -32,7 +32,7 @@
     <ApplicationTitle>QuickMath</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>com.companyname.quickmath</ApplicationId>
+    <ApplicationId>com.pikmintea.quickmath</ApplicationId>
 
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -50,14 +50,12 @@
 
   <ItemGroup>
     <!-- App Icon -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
-
+	  <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#6C5CE7" />
     <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg"  BaseSize="128,128" />
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />

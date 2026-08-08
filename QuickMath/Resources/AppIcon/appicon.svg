@@ -1,4 +1,19 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="0" width="456" height="456" fill="#512BD4" />
+<svg width="512" height="512" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="340" height="340" fill="#6C5CE7"/>
+  <g fill="#FFC93C" stroke="#2D2D3A" stroke-width="10" stroke-linejoin="round">
+    <path d="
+      M 140 70
+      L 200 70
+      L 200 140
+      L 270 140
+      L 270 200
+      L 200 200
+      L 200 270
+      L 140 270
+      L 140 200
+      L 70 200
+      L 70 140
+      L 140 140
+      Z" />
+  </g>
 </svg>

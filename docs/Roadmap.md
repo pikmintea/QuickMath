@@ -26,6 +26,9 @@ $0 budget 😅
 - [ ] Leaderboard screen, sorted, maybe weekly reset
 - [ ] Firestore security rules gated on `request.auth.uid`
 
-- [ ] App icon, screenshots, store listing
+- [x] App icon
+- [ ] App Website
+- [ ] screenshots
+- [ ] store listing
 - [ ] Play Store submission using developer account
 - [ ] Confirm AGPL license terms are compatible with the store listing

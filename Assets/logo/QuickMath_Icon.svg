@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="14" width="300" height="300" rx="64" fill="#C9C3F7"/>
+  <rect x="0" y="0" width="300" height="300" rx="64" fill="#6C5CE7" stroke="#2D2D3A" stroke-width="8"/>
+  <g fill="#FFC93C" stroke="#2D2D3A" stroke-width="8" stroke-linejoin="round">
+    <path d="
+      M 128 60
+      L 172 60
+      L 172 128
+      L 240 128
+      L 240 172
+      L 172 172
+      L 172 240
+      L 128 240
+      L 128 172
+      L 60 172
+      L 60 128
+      L 128 128
+      Z" />
+  </g>
+</svg>
