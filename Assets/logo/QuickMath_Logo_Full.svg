@@ -1,0 +1,38 @@
+<svg width="1000" height="360" viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg">
+
+  <g transform="translate(20,20)">
+    <rect x="10" y="14" width="300" height="300" rx="64" fill="#C9C3F7"/>
+
+    <rect x="0" y="0" width="300" height="300" rx="64" fill="#6C5CE7" stroke="#2D2D3A" stroke-width="8"/>
+
+    <g fill="#FFC93C" stroke="#2D2D3A" stroke-width="8" stroke-linejoin="round">
+      <path d="
+        M 128 60
+        L 172 60
+        L 172 128
+        L 240 128
+        L 240 172
+        L 172 172
+        L 172 240
+        L 128 240
+        L 128 172
+        L 60 172
+        L 60 128
+        L 128 128
+        Z" />
+    </g>
+  </g>
+
+
+  <g transform="translate(360,0)">
+    <text x="0" y="150" font-family="'Baloo 2', 'Segoe UI', sans-serif" font-weight="800" font-size="96" fill="#2D2D3A">
+      Quick<tspan fill="#6C5CE7">Math</tspan>
+    </text>
+    <text x="4" y="200" font-family="'Nunito Sans', 'Segoe UI', sans-serif" font-weight="700" font-size="26" fill="#8B87A3" letter-spacing="1">
+      practice made fun
+    </text>
+
+    <text x="4" y="270" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="40" fill="#6C5CE7" opacity="0.15">+ × ÷ =</text>
+  </g>
+
+</svg>
