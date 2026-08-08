@@ -18,7 +18,9 @@ namespace QuickMath
 
             // Add device-specific services used by the QuickMath.Shared project
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
+
             builder.Services.AddSingleton<IAccountManagerService, AccountManagerService>();
+            builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
