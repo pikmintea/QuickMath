@@ -7,6 +7,7 @@ namespace QuickMath.Services
     {
         public async Task<string?> SignInAsync()
         {
+            System.Diagnostics.Debug.WriteLine("SignInAsync called");
             try
             {
                 var authResult = await WebAuthenticator.Default.AuthenticateAsync(
@@ -24,8 +25,9 @@ namespace QuickMath.Services
 
                 return authResult.Properties["id_token"];
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"WebAuthenticator failed: {ex}");
                 return null;
             }
         }
