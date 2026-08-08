@@ -25,23 +25,13 @@ A Duolingo-style math practice app. Native app first (Android via Play Store), b
 - All AI-suggested changes reviewed and applied manually, one at a time.
 - Only sole help by chatbot can be tolerated but not like using them to gen full code.
 
-### Known issues — next debugging session
-
-1. **Android: neither guest nor Google sign-in button works**, despite buttons visibly responding to taps.
-   - Debug logging added to `PlayAsGuest()` and `GoogleAuthService.SignInAsync()` — need to actually run on Android and read the Debug output to see which step fails.
-   - Possible route mismatch: `PlayAsGuest()` navigates to `/practice`, nav menu links to `/play` — confirm which route actually exists and make them consistent.
-2. **Windows: Google sign-in fundamentally unsupported by `WebAuthenticator`.** Needs a separate implementation:
-   - New OAuth Client ID in Google Cloud Console, type **Desktop app** (PKCE, no secret) — not yet created.
-   - Windows-specific flow: open system browser manually (`Process.Start`), run a local `HttpListener` on `127.0.0.1` to catch the redirect, exchange the authorization code for a token via PKCE.
-   - This is a distinctly separate code path from the Android `WebAuthenticator` flow — keep them cleanly separated (e.g. `#if WINDOWS` / `#if ANDROID` branches inside `GoogleAuthService`, or two separate implementations selected via DI per platform).
-
 ## Roadmap phases
 
 ### Phase 1 — Core loop (in progress)
 
 - [x] Guest / sign-in decision screen
 - [ ] **Fix Android guest + Google sign-in (debug session needed)**
-- [ ] **Fix/build Windows Google sign-in (Desktop OAuth client + PKCE flow)**
+- [x] **Fix/build Windows Google sign-in (Desktop OAuth client + PKCE flow)**
 - [ ] Resolve `/practice` vs `/play` route naming — pick one, use everywhere
 - [ ] First real exercise screen: one exercise type (e.g. multiplication tables), question generation, answer input, instant right/wrong feedback
 - [ ] Local streak counter (`StreakService`, using `Preferences`, following the guest/signed-in split pattern)
