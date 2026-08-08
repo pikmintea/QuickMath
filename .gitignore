@@ -5,3 +5,4 @@
 /QuickMath.Web.Client/obj
 /QuickMath.Shared/bin
 /QuickMath/bin
+QuickMath/Platforms/Android/google-services.json

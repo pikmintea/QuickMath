@@ -1,6 +1,7 @@
 ﻿@page "/login"
 @inject NavigationManager Navigation
 @using QuickMath.Shared.Services
+@inject IAccountManagerService AccountManager
 
 <form action="" class="form">
     <p>
@@ -122,15 +123,20 @@
 @code {
     private async void SignInWithGoogle()
     {
-      
-       
+      CrossFirebase.Initialize(); // your existing Firebase core init — confirm this exists
+
+#if ANDROID
+FirebaseAuthGoogleImplementation.Initialize("395552232993-q40kavjdlunlcph5d6re7eb7he469n2v.apps.googleusercontent.com");
+#endif
+
+  
 
     }
+
     private void PlayAsGuest()
     {
-     
-        Navigation.NavigateTo("/practice");
-       
+        AccountManager.SetGuest();
+        Navigation.NavigateTo("/play");
     }
 
 }
