@@ -1,7 +1,216 @@
 ﻿@page "/account"
+@using QuickMath.Shared.Services
+@inject IAccountManagerService AccountManager
+@inject NavigationManager Navigation
 
 <PageTitle>Account</PageTitle>
+@* <button @onclick="ClearDataForTesting">Clear data</button> *@
+@* <p>DEBUG: @AccountManager.State</p>
+<p>DEBUG: @AccountManager.State / @(AccountManager.CurrentUser?.DisplayName ?? "CurrentUser is null")</p> *@
+
+
+@if (AccountManager.State == AccountState.SignedIn && AccountManager.CurrentUser is { } user)
+{
+    <div class="account-card">
+        @if (!string.IsNullOrEmpty(user.PhotoUrl))
+        {
+            <img src="@user.PhotoUrl" alt="Profile picture" class="avatar" />
+        }
+        else
+        {
+            <div class="avatar avatar-fallback">
+                @(string.IsNullOrEmpty(user.DisplayName) ? "?" : user.DisplayName[0].ToString().ToUpper())
+            </div>
+        }
+
+        <div class="account-info">
+            <strong>@(user.DisplayName ?? "QuickMath player")</strong>
+            <span>@user.Email</span>
+        </div>
+
+        <button class="signout-btn" @onclick="SignOut">Sign out</button>
+    </div>
+}
+else if (AccountManager.State == AccountState.Guest)
+{
+    <div class="guest-card">
+        <div class="guest-card-text">
+            <strong>You're playing as a guest</strong>
+            <span>Progress is saved on this device only. Sign in to sync everywhere and join the leaderboard.</span>
+        </div>
+        <button class="guest-card-btn" @onclick="GoToSignIn">
+            <svg class="icon" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+            </svg>
+            Sign in with Google
+        </button>
+    </div>
+}
+
+<style>
+    .account-card, .guest-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: #FFFFFF;
+        border: 3px solid #2D2D3A;
+        border-radius: 24px;
+        padding: 20px 24px;
+        box-shadow: 0 8px 0 #E4DFFA;
+        max-width: 420px;
+        margin: 24px auto;
+        font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .guest-card {
+        flex-direction: column;
+        align-items: flex-start;
+        background: #FFF7DE;
+        box-shadow: 0 8px 0 #F0D98C;
+    }
+
+    .avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 3px solid #2D2D3A;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .avatar-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #6C5CE7;
+        color: #FFFFFF;
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+    }
+
+    .account-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+    }
+
+        .account-info strong {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 17px;
+            color: #2D2D3A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-info span {
+            font-size: 13px;
+            color: #8B87A3;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    .signout-btn {
+        background: #FFFFFF;
+        border: 3px solid #2D2D3A;
+        border-radius: 14px;
+        padding: 8px 16px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        color: #2D2D3A;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #2D2D3A;
+        transition: transform 120ms ease, box-shadow 120ms ease;
+        white-space: nowrap;
+    }
+
+        .signout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #2D2D3A;
+        }
+
+        .signout-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #2D2D3A;
+        }
+
+    .guest-card-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .guest-card-text strong {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 17px;
+            color: #2D2D3A;
+        }
+
+        .guest-card-text span {
+            font-size: 14px;
+            color: #8B87A3;
+            font-weight: 600;
+        }
+
+    .guest-card-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        align-self: stretch;
+        justify-content: center;
+        background: #FFFFFF;
+        border: 3px solid #2D2D3A;
+        border-radius: 14px;
+        padding: 10px 18px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        color: #2D2D3A;
+        cursor: pointer;
+        box-shadow: 0 5px 0 #2D2D3A;
+        transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+        .guest-card-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #2D2D3A;
+        }
+
+        .guest-card-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #2D2D3A;
+        }
+
+    .icon {
+        width: 18px;
+        height: 18px;
+    }
+</style>
 
 @code {
-  
+    private void SignOut()
+    {
+        AccountManager.SetGuest();
+        Navigation.NavigateTo("/login");
+    }
+
+    private void GoToSignIn()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    private void ClearDataForTesting()
+    {
+        AccountManager.ClearAllData();
+        Navigation.NavigateTo("/login");
+    }
 }

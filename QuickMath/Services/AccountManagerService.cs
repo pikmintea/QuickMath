@@ -47,5 +47,11 @@ namespace QuickMath.Services
             Preferences.Set(AccountStateKey, nameof(AccountState.SignedIn));
             Preferences.Set(UserProfileKey, JsonSerializer.Serialize(profile));
         }
+        public void ClearAllData()
+        {
+            Preferences.Clear();
+            State = AccountState.NotSignedInOrGuest;
+            CurrentUser = null;
+        }
     }
 }

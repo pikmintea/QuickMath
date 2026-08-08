@@ -8,5 +8,7 @@ namespace QuickMath.Shared.Services
         UserProfile? CurrentUser { get; }
         void SetGuest();
         void SetSignedIn(UserProfile profile);
+
+        void ClearAllData();
     }
 }

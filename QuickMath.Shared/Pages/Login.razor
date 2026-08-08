@@ -122,14 +122,14 @@
 
 @code {
 
-    private async void SignInWithGoogle()
+    private async Task SignInWithGoogle()
     {
-        var idToken = await GoogleAuth.SignInAsync();
-        if (idToken != null)
+        var profile = await GoogleAuth.SignInToFirebaseAsync();
+        if (profile != null)
         {
+            AccountManager.SetSignedIn(profile);
             Navigation.NavigateTo("/play");
         }
-   
     }
 
     private void PlayAsGuest()
