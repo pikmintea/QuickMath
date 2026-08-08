@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using QuickMath.Shared.Models;
 
 namespace QuickMath.Shared.Services
 {
     public interface IAccountManagerService
     {
         AccountState State { get; }
+        UserProfile? CurrentUser { get; }
         void SetGuest();
-        void SetSignedIn();
+        void SetSignedIn(UserProfile profile);
     }
 }

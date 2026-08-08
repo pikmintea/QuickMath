@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using QuickMath.Shared.Models;
 
 namespace QuickMath.Shared.Services
 {
     public interface IGoogleAuthService
     {
-        Task<string?> SignInAsync(); 
+        Task<string?> SignInAsync();
+        Task<UserProfile?> SignInToFirebaseAsync();
     }
 }
