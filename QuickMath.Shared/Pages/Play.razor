@@ -1,218 +1,214 @@
 ﻿@page "/play"
+@using QuickMath.Shared.Services
+@using QuickMath.Shared.Models
+@inject IExerciseGenerator ExerciseGenerator
 
 <PageTitle>Play</PageTitle>
 
-<div class="play-page">
-    <div class="play-header">
-        <h1>Addition</h1>
-  
-    </div>
-
+@if (current != null)
+{
     <div class="play-wrap">
-
-
-        <p>AnswerStreak = @AnswerStreak Straight Answers</p>
-
-        <div class="question-card">
-            <div class="question-text">@NumberOne + @NumberTwo = ?</div>
-
-            <input @oninput="CheckAnswer" @bind="Answer" class="answer-input"
-                   type="number"
-                   placeholder="?"
-                   aria-label="Answer" />
-
-
+        <div class="top-row">
+            <span class="streak-pill">Streak: @streak</span>
+            <span class="answered-pill">Answered: @answeredCount</span>
         </div>
 
+        <div class="question-card @cardState">
+            <div class="question-text">@current.QuestionText</div>
+            <input class="answer-input @cardState"
+                   value="@answerInput"
+                   @oninput="OnAnswerChanged"
+                   inputmode="numeric"
+                   autocomplete="off" />
+            <div class="feedback-msg @cardState">@feedback</div>
+        </div>
 
+        <div class="hint">Type your answer — it checks automatically, no button needed</div>
     </div>
-</div>
+}
+
 <style>
-
-
-    .play-page {
-        min-height: 100%;
-        padding: 40px 48px;
-    }
-
-    .play-header {
-        max-width: 640px;
-        margin-bottom: 28px;
-    }
-
-        .play-header h1 {
-            margin: 0 0 6px;
-            font-family: 'Baloo 2', sans-serif;
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-        .play-header p {
-            margin: 0;
-            color: #8B87A3;
-            font-size: 15px;
-            font-weight: 600;
-        }
-
     .play-wrap {
-        width: 100%;
-        max-width: 640px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 28px;
+        gap: 24px;
+        max-width: 380px;
+        margin: 32px auto;
+        font-family: 'Nunito Sans', sans-serif;
     }
 
-    /* Progress */
-
-    .progress-bar {
+    .top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         width: 100%;
-        height: 14px;
-        overflow: hidden;
-        background: #EEEDFE;
-        border: 3px solid #2D2D3A;
-        border-radius: 999px;
     }
 
-    .progress-fill {
-        width: 45%;
-        height: 100%;
-        background: #6C5CE7;
+    .streak-pill, .answered-pill {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        color: #2D2D3A;
     }
 
-    /* Question */
+    .answered-pill {
+        color: #8B87A3;
+        font-size: 13px;
+    }
 
     .question-card {
-        width: 100%;
-        padding: 40px;
-        text-align: center;
         background: #FFFFFF;
         border: 3px solid #2D2D3A;
         border-radius: 28px;
+        padding: 48px 40px;
+        width: 100%;
+        text-align: center;
         box-shadow: 0 10px 0 #E4DFFA;
+        transition: box-shadow 150ms ease, border-color 150ms ease;
+    }
+
+        .question-card.correct {
+            box-shadow: 0 10px 0 #1F9C57;
+            border-color: #2ECC71;
+        }
+
+        .question-card.wrong {
+            box-shadow: 0 10px 0 #B03A2E;
+            border-color: #E74C3C;
+            animation: shake 300ms ease;
+        }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-8px);
+        }
+
+        75% {
+            transform: translateX(8px);
+        }
     }
 
     .question-text {
-        margin-bottom: 24px;
         font-family: 'Baloo 2', sans-serif;
         font-size: 44px;
         font-weight: 800;
+        margin-bottom: 28px;
+        color: #2D2D3A;
     }
-
-    /* Answer */
 
     .answer-input {
         width: 140px;
-        height: 56px;
+        height: 64px;
         text-align: center;
         font-family: 'Baloo 2', sans-serif;
-        font-size: 26px;
+        font-size: 30px;
         font-weight: 700;
-        color: #2D2D3A;
-        background: #FFFFFF;
         border: 3px solid #2D2D3A;
-        border-radius: 16px;
+        border-radius: 18px;
         outline: none;
     }
 
-        .answer-input:focus {
-            border-color: #6C5CE7;
-            box-shadow: 0 0 0 3px #EEEDFE;
+        .answer-input.correct {
+            border-color: #2ECC71;
+            background: #EAFBF1;
+            color: #1F9C57;
         }
 
-    /* Check button */
-
-    .check-btn {
-        display: block;
-        margin: 24px auto 0;
-        padding: 12px 32px;
-        background: #FFC93C;
-        color: #2D2D3A;
-        border: 3px solid #2D2D3A;
-        border-radius: 16px;
-        font-family: 'Nunito Sans', sans-serif;
-        font-size: 16px;
-        font-weight: 800;
-        cursor: pointer;
-        box-shadow: 0 6px 0 #C99A1F;
-        transition: transform 100ms ease, box-shadow 100ms ease;
-    }
-
-        .check-btn:hover {
-            transform: translateY(-2px);
+        .answer-input.wrong {
+            border-color: #E74C3C;
+            background: #FDECEA;
+            color: #B03A2E;
         }
 
-        .check-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #C99A1F;
-        }
-
-    
-    .streak-pill {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        background: #FFF7DE;
-        border: 3px solid #2D2D3A;
-        border-radius: 999px;
+    .feedback-msg {
+        margin-top: 18px;
         font-family: 'Baloo 2', sans-serif;
-        font-size: 14px;
         font-weight: 700;
+        font-size: 16px;
+        height: 22px;
     }
 
-   
-
-    @@media (max-width: 700px) {
-        .play-page {
-            padding: 28px 20px;
+        .feedback-msg.correct {
+            color: #2ECC71;
         }
 
-        .question-card {
-            padding: 30px 20px;
+        .feedback-msg.wrong {
+            color: #E74C3C;
         }
 
-        .question-text {
-            font-size: 36px;
-        }
-    }</style>
-
+    .hint {
+        font-size: 13px;
+        color: #8B87A3;
+        font-weight: 600;
+        text-align: center;
+    }
+</style>
 
 @code {
-    Random random = new Random();
-    int NumberOne =0;
-    int NumberTwo = 0;
-    int MaxNumberGenerated = 1;
-    int MinNumberGenerated = 1;
-    int Answer;
-    int Result;
-    bool HasBeenGenerated = false;
-    int AnswerStreak = 0;
-}
+    private Exercise? current;
+    private string answerInput = "";
+    private string cardState = "";
+    private string feedback = "";
+    private int streak = 0;
+    private int answeredCount = 0;
+    private bool isProcessing = false;
 
-@code {
     protected override void OnInitialized()
     {
-        GenerateNumbers();
+        NextQuestion();
     }
-    public void GenerateNumbers()
-    {
-        NumberOne = random.Next(MinNumberGenerated, MaxNumberGenerated);
-        NumberTwo = random.Next(MinNumberGenerated, MaxNumberGenerated);
-        Result = NumberOne + NumberTwo;
-    }
-    public void CheckAnswer()
-    {
-        if (Answer == Result)
-        {
-            GenerateNumbers();
-            AnswerStreak++;
-           
 
+    private void NextQuestion()
+    {
+        current = ExerciseGenerator.NextAddition();
+        answerInput = "";
+        cardState = "";
+        feedback = "";
+        isProcessing = false;
+    }
+
+    private async Task OnAnswerChanged(ChangeEventArgs e)
+    {
+        if (isProcessing || current == null)
+        {
+            return;
+        }
+
+        answerInput = e.Value?.ToString() ?? "";
+
+        var expectedLength = current.CorrectAnswer.ToString().Length;
+        if (answerInput.Length < expectedLength)
+        {
+            return;
+        }
+
+        isProcessing = true;
+
+        if (int.TryParse(answerInput, out var val) && val == current.CorrectAnswer)
+        {
+            cardState = "correct";
+            feedback = "Correct!";
+            streak++;
+            answeredCount++;
+            StateHasChanged();
+            await Task.Delay(700);
         }
         else
         {
-            AnswerStreak = 0;
+            cardState = "wrong";
+            feedback = $"Answer: {current.CorrectAnswer}";
+            streak = 0;
+            answeredCount++;
+            StateHasChanged();
+            await Task.Delay(900);
         }
+
+        NextQuestion();
+        StateHasChanged();
     }
 }

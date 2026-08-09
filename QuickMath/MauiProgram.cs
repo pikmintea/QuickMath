@@ -21,6 +21,7 @@ namespace QuickMath
 
             builder.Services.AddSingleton<IAccountManagerService, AccountManagerService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
+            builder.Services.AddSingleton<IExerciseGenerator, AdditionExerciseGenerator>();
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
