@@ -2,17 +2,217 @@
 
 <PageTitle>Play</PageTitle>
 
-<h1>Play</h1>
+<div class="play-page">
+    <div class="play-header">
+        <h1>Addition</h1>
+  
+    </div>
 
-<p role="status">Current count: @currentCount</p>
+    <div class="play-wrap">
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+        <p>AnswerStreak = @AnswerStreak Straight Answers</p>
+
+        <div class="question-card">
+            <div class="question-text">@NumberOne + @NumberTwo = ?</div>
+
+            <input @oninput="CheckAnswer" @bind="Answer" class="answer-input"
+                   type="number"
+                   placeholder="?"
+                   aria-label="Answer" />
+
+
+        </div>
+
+
+    </div>
+</div>
+<style>
+
+
+    .play-page {
+        min-height: 100%;
+        padding: 40px 48px;
+    }
+
+    .play-header {
+        max-width: 640px;
+        margin-bottom: 28px;
+    }
+
+        .play-header h1 {
+            margin: 0 0 6px;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .play-header p {
+            margin: 0;
+            color: #8B87A3;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+    .play-wrap {
+        width: 100%;
+        max-width: 640px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+    }
+
+    /* Progress */
+
+    .progress-bar {
+        width: 100%;
+        height: 14px;
+        overflow: hidden;
+        background: #EEEDFE;
+        border: 3px solid #2D2D3A;
+        border-radius: 999px;
+    }
+
+    .progress-fill {
+        width: 45%;
+        height: 100%;
+        background: #6C5CE7;
+    }
+
+    /* Question */
+
+    .question-card {
+        width: 100%;
+        padding: 40px;
+        text-align: center;
+        background: #FFFFFF;
+        border: 3px solid #2D2D3A;
+        border-radius: 28px;
+        box-shadow: 0 10px 0 #E4DFFA;
+    }
+
+    .question-text {
+        margin-bottom: 24px;
+        font-family: 'Baloo 2', sans-serif;
+        font-size: 44px;
+        font-weight: 800;
+    }
+
+    /* Answer */
+
+    .answer-input {
+        width: 140px;
+        height: 56px;
+        text-align: center;
+        font-family: 'Baloo 2', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #2D2D3A;
+        background: #FFFFFF;
+        border: 3px solid #2D2D3A;
+        border-radius: 16px;
+        outline: none;
+    }
+
+        .answer-input:focus {
+            border-color: #6C5CE7;
+            box-shadow: 0 0 0 3px #EEEDFE;
+        }
+
+    /* Check button */
+
+    .check-btn {
+        display: block;
+        margin: 24px auto 0;
+        padding: 12px 32px;
+        background: #FFC93C;
+        color: #2D2D3A;
+        border: 3px solid #2D2D3A;
+        border-radius: 16px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 6px 0 #C99A1F;
+        transition: transform 100ms ease, box-shadow 100ms ease;
+    }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .check-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #C99A1F;
+        }
+
+    
+    .streak-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        background: #FFF7DE;
+        border: 3px solid #2D2D3A;
+        border-radius: 999px;
+        font-family: 'Baloo 2', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+   
+
+    @@media (max-width: 700px) {
+        .play-page {
+            padding: 28px 20px;
+        }
+
+        .question-card {
+            padding: 30px 20px;
+        }
+
+        .question-text {
+            font-size: 36px;
+        }
+    }</style>
+
 
 @code {
-    private int currentCount = 0;
+    Random random = new Random();
+    int NumberOne =0;
+    int NumberTwo = 0;
+    int MaxNumberGenerated = 1;
+    int MinNumberGenerated = 1;
+    int Answer;
+    int Result;
+    bool HasBeenGenerated = false;
+    int AnswerStreak = 0;
+}
 
-    private void IncrementCount()
+@code {
+    protected override void OnInitialized()
     {
-        currentCount++;
+        GenerateNumbers();
+    }
+    public void GenerateNumbers()
+    {
+        NumberOne = random.Next(MinNumberGenerated, MaxNumberGenerated);
+        NumberTwo = random.Next(MinNumberGenerated, MaxNumberGenerated);
+        Result = NumberOne + NumberTwo;
+    }
+    public void CheckAnswer()
+    {
+        if (Answer == Result)
+        {
+            GenerateNumbers();
+            AnswerStreak++;
+           
+
+        }
+        else
+        {
+            AnswerStreak = 0;
+        }
     }
 }
