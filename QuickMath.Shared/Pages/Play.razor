@@ -7,156 +7,63 @@
 
 @if (current != null)
 {
-    <div class="play-wrap">
-        <div class="top-row">
-            <span class="streak-pill">Streak: @streak</span>
-            <span class="answered-pill">Answered: @answeredCount</span>
+    <div class="play-page">
+        <div class="floaters">
+            <span style="top:8%; left:6%; font-size:120px;">+</span>
+            <span style="top:70%; left:4%; font-size:90px; animation-delay:3s;">÷</span>
+            <span style="top:12%; left:88%; font-size:100px; animation-delay:5s;">×</span>
+            <span style="top:78%; left:86%; font-size:110px; animation-delay:2s;">=</span>
+            <span style="top:45%; left:2%; font-size:70px; animation-delay:7s;">7</span>
+            <span style="top:40%; left:94%; font-size:80px; animation-delay:4s;">−</span>
         </div>
 
-        <div class="question-card @cardState">
+        <div class="switch">
+            <select class="dropdown">
+                <option value="addition">addition</option>
+                <option value="substraction">substraction</option>
+            </select>
+            <select class="dropdown" >
+                <option value="easy++">easy++</option>
+                <option value="easy">easy</option>
+                <option value="medium">medium</option>
+            </select>
+        </div>
+
+        <div class="corner-stat top-right">
+            <span class="corner-stat-num"> @streak</span>
+            <span class="corner-stat-label">Streak</span>
+        </div>
+        <div class="corner-stat top-right-2">
+            <span class="corner-stat-num">@answeredCount</span>
+            <span class="corner-stat-label">Answered</span>
+        </div>
+
+        <div class="stage @stageState">
             <div class="question-text">@current.QuestionText</div>
             <input class="answer-input @cardState"
                    value="@answerInput"
                    @oninput="OnAnswerChanged"
                    inputmode="numeric"
-                   autocomplete="off" />
-            <div class="feedback-msg @cardState">@feedback</div>
+                   autocomplete="off"
+                   placeholder="?" />
+            <div class="feedback-msg @cardState @(feedback != "" ? "show" : "")">@feedback</div>
         </div>
 
-        <div class="hint">Type your answer — it checks automatically, no button needed</div>
+        <div class="hint">Type your answer — it checks automatically</div>
     </div>
 }
-
-<style>
-    .play-wrap {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 24px;
-        max-width: 380px;
-        margin: 32px auto;
-        font-family: 'Nunito Sans', sans-serif;
-    }
-
-    .top-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-    }
-
-    .streak-pill, .answered-pill {
-        font-family: 'Baloo 2', sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-        color: #2D2D3A;
-    }
-
-    .answered-pill {
-        color: #8B87A3;
-        font-size: 13px;
-    }
-
-    .question-card {
-        background: #FFFFFF;
-        border: 3px solid #2D2D3A;
-        border-radius: 28px;
-        padding: 48px 40px;
-        width: 100%;
-        text-align: center;
-        box-shadow: 0 10px 0 #E4DFFA;
-        transition: box-shadow 150ms ease, border-color 150ms ease;
-    }
-
-        .question-card.correct {
-            box-shadow: 0 10px 0 #1F9C57;
-            border-color: #2ECC71;
-        }
-
-        .question-card.wrong {
-            box-shadow: 0 10px 0 #B03A2E;
-            border-color: #E74C3C;
-            animation: shake 300ms ease;
-        }
-
-    @@keyframes shake {
-        0%, 100% {
-            transform: translateX(0);
-        }
-
-        25% {
-            transform: translateX(-8px);
-        }
-
-        75% {
-            transform: translateX(8px);
-        }
-    }
-
-    .question-text {
-        font-family: 'Baloo 2', sans-serif;
-        font-size: 44px;
-        font-weight: 800;
-        margin-bottom: 28px;
-        color: #2D2D3A;
-    }
-
-    .answer-input {
-        width: 140px;
-        height: 64px;
-        text-align: center;
-        font-family: 'Baloo 2', sans-serif;
-        font-size: 30px;
-        font-weight: 700;
-        border: 3px solid #2D2D3A;
-        border-radius: 18px;
-        outline: none;
-    }
-
-        .answer-input.correct {
-            border-color: #2ECC71;
-            background: #EAFBF1;
-            color: #1F9C57;
-        }
-
-        .answer-input.wrong {
-            border-color: #E74C3C;
-            background: #FDECEA;
-            color: #B03A2E;
-        }
-
-    .feedback-msg {
-        margin-top: 18px;
-        font-family: 'Baloo 2', sans-serif;
-        font-weight: 700;
-        font-size: 16px;
-        height: 22px;
-    }
-
-        .feedback-msg.correct {
-            color: #2ECC71;
-        }
-
-        .feedback-msg.wrong {
-            color: #E74C3C;
-        }
-
-    .hint {
-        font-size: 13px;
-        color: #8B87A3;
-        font-weight: 600;
-        text-align: center;
-    }
-</style>
 
 @code {
     private Exercise? current;
     private string answerInput = "";
     private string cardState = "";
+    private string stageState = "";
     private string feedback = "";
     private int streak = 0;
     private int answeredCount = 0;
+    private int correctCount = 0;
     private bool isProcessing = false;
+
 
     protected override void OnInitialized()
     {
@@ -168,6 +75,7 @@
         current = ExerciseGenerator.NextAddition();
         answerInput = "";
         cardState = "";
+        stageState = "";
         feedback = "";
         isProcessing = false;
     }
@@ -195,20 +103,24 @@
             feedback = "Correct!";
             streak++;
             answeredCount++;
+            correctCount++;
             StateHasChanged();
-            await Task.Delay(700);
+            await Task.Delay(650);
         }
         else
         {
             cardState = "wrong";
+            stageState = "wrong";
             feedback = $"Answer: {current.CorrectAnswer}";
             streak = 0;
             answeredCount++;
             StateHasChanged();
-            await Task.Delay(900);
+            await Task.Delay(850);
         }
 
         NextQuestion();
         StateHasChanged();
     }
+
+    private double Accuracy => answeredCount == 0 ? 0 : (double)correctCount / answeredCount * 100;
 }

@@ -143,5 +143,8 @@
 
 - [x] Design "Sumsum" currency — name, icon ( ∑ ∑ )
 - [ ] Decide how Sumsum is earned (streaks? daily goals? achievements?)
+- [ ] Build a theme shop screen
+- [ ] Cappuccino/Mocha theme (warm browns/creams) as first premium theme
+- [ ] Theme unlock/ownership persistence (Firestore for signed-in)
   
   
