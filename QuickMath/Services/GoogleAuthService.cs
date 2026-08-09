@@ -5,18 +5,13 @@ namespace QuickMath.Services
 {
     public class GoogleAuthService : IGoogleAuthService
     {
-        // Same Web Client ID used by Android/Firebase — do not change.
         private const string WebClientId = Secrets.GoogleWebClientId;
 
-        // Desktop app Client ID — used only by the Windows PKCE flow.
         private const string DesktopClientId = Secrets.GoogleDesktopClientId;
 
-        // Google's token endpoint requires this even for "Desktop app" clients
-        // using PKCE (a quirk of Google's implementation, not how PKCE is
-        // supposed to work). Lives in the gitignored Secrets.cs.
+
         private const string DesktopClientSecret = Secrets.GoogleDesktopClientSecret;
 
-        // Firebase Web API key — from google-services.json ("current_key").
         private const string FirebaseWebApiKey = Secrets.FirebaseWebApiKey;
 
         public async Task<string?> SignInAsync()
@@ -26,7 +21,7 @@ namespace QuickMath.Services
             {
 #if ANDROID
                 return await SignInAndroidAsync();
-#elif WINDOWS
+                #elif WINDOWS
                 return await SignInWindowsAsync();
 #else
                 System.Diagnostics.Debug.WriteLine("Google Sign-In not implemented on this platform yet.");
@@ -40,11 +35,7 @@ namespace QuickMath.Services
             }
         }
 
-        /// <summary>
-        /// Signs in with Google, then exchanges the Google ID token for a Firebase
-        /// user via Firebase Auth's REST API. Returns the signed-in user's profile
-        /// (uid, name, email, photo) on success, or null on failure/cancellation.
-        /// </summary>
+ 
         public async Task<QuickMath.Shared.Models.UserProfile?> SignInToFirebaseAsync()
         {
             var googleIdToken = await SignInAsync();
@@ -59,7 +50,7 @@ namespace QuickMath.Services
                 var payload = new
                 {
                     postBody = $"id_token={googleIdToken}&providerId=google.com",
-                    requestUri = "http://localhost", // required by the API, not actually used
+                    requestUri = "http://localhost", 
                     returnSecureToken = true
                 };
 
@@ -114,13 +105,7 @@ namespace QuickMath.Services
 #endif
 
 #if WINDOWS
-        // Windows has no native WebAuthenticator support, so we do the OAuth
-        // "loopback + PKCE" flow ourselves:
-        // 1. Generate a PKCE code_verifier/code_challenge pair (no client secret needed).
-        // 2. Start a tiny local HTTP listener on 127.0.0.1 on a free port.
-        // 3. Open the system browser to Google's consent screen, redirect_uri pointing at that listener.
-        // 4. Wait for Google to redirect back with an authorization "code".
-        // 5. Exchange that code (+ code_verifier) for tokens via Google's token endpoint.
+
         private static async Task<string?> SignInWindowsAsync()
         {
             var codeVerifier = GeneratePkceCodeVerifier();
