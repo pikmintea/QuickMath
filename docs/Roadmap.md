@@ -125,6 +125,7 @@
 - [ ] Monitor Firebase Authentication usage against free tier limits
 - [ ] Monitor Firestore reads/writes against free tier limits
 - [ ] Plan a fallback if free tier limits are ever exceeded
+- [ ] Fully port it to the internet
 
 ## Post-launch / stretch ideas
 
@@ -136,3 +137,11 @@
 - [ ] Friend leaderboard (not just global)
 - [ ] iOS build (currently Android/Windows-only in practice)
 - [ ] Localization / multi-language support
+- [ ] Add Some Comsmetic only / some way to make a litle bit of money for the hosting and without makeing it Pay2Win! NO PAY2WIN!, so the sumsum we dont sell them.
+
+## Cosmetics / economy
+
+- [x] Design "Sumsum" currency — name, icon ( ∑ ∑ )
+- [ ] Decide how Sumsum is earned (streaks? daily goals? achievements?)
+  
+  
