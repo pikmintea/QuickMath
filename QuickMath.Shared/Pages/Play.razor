@@ -18,14 +18,14 @@
         </div>
 
         <div class="switch">
-            <select class="dropdown">
-                <option value="addition">addition</option>
-                <option value="substraction">substraction</option>
+            <select class="dropdown" @bind="selectedOperation" >
+                <option  value="addition">addition</option>
+                <option value="subtraction">subtraction</option>
             </select>
-            <select class="dropdown" >
-                <option value="easy++">easy++</option>
-                <option value="easy">easy</option>
-                <option value="medium">medium</option>
+            <select class="dropdown" @bind="selectedDifficulty" >
+                <option  value="easy++">easy++</option>
+                <option  value="easy">easy</option>
+                <option  value="medium">medium</option>
             </select>
         </div>
 
@@ -64,7 +64,8 @@
     private int correctCount = 0;
     private bool isProcessing = false;
 
-
+    public string selectedOperation = "addition";
+    public string selectedDifficulty = "easy++";
     protected override void OnInitialized()
     {
         NextQuestion();
@@ -72,13 +73,27 @@
 
     private void NextQuestion()
     {
-        current = ExerciseGenerator.NextAddition();
+        if (selectedOperation == "addition")
+        {
+            ExerciseGenerator.SetDifficulty(selectedDifficulty);
+            current = ExerciseGenerator.NextAddition();
+        }
+        else if (selectedOperation == "subtraction")
+        {
+            ExerciseGenerator.SetDifficulty(selectedDifficulty);
+            current = ExerciseGenerator.NextSubtraction();
+        }
+        else
+        {
+            cardState = "Select an operation"; 
+        }
         answerInput = "";
         cardState = "";
         stageState = "";
         feedback = "";
         isProcessing = false;
     }
+
 
     private async Task OnAnswerChanged(ChangeEventArgs e)
     {
