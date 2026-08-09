@@ -11,9 +11,12 @@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
         <div class="nav-item px-3">
+        @if (AccountManager.State == AccountState.SignedIn)
+        {
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
+        }
         </div>
 
         <div class="nav-item px-3">
@@ -22,25 +25,48 @@
                 Play
             </NavLink>
         </div>
-        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link account-nav-link" href="account" title="Account">
-                
-                @if (AccountManager.State == AccountState.SignedIn &&
-                     !string.IsNullOrEmpty(AccountManager.CurrentUser?.PhotoUrl))
-                {
-                    <img class="nav-profile-picture"
-                         src="@AccountManager.CurrentUser.PhotoUrl"
-                         alt="Account" />
-                }
-                else
-                {
-                    <span class="bi bi-person-circle nav-profile-fallback"
-                          aria-hidden="true"></span>
-                }
-                <label>  account</label>
-            </NavLink>
-        </div>
+        @if (AccountManager.State == AccountState.SignedIn)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="shop">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true" title="Shop"></span>
+                    Shop
+                </NavLink>
+            </div>
+        }
+
+        @if (AccountManager.State == AccountState.SignedIn)
+        {
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link account-nav-link" href="account" title="Account">
+
+                    @if (!string.IsNullOrEmpty(AccountManager.CurrentUser?.PhotoUrl))
+                    {
+                        <img class="nav-profile-picture"
+                        src="@AccountManager.CurrentUser.PhotoUrl"
+                        alt="Account" />
+                    }
+                    else
+                    {
+                        <span class="bi bi-person-circle nav-profile-fallback"
+                        aria-hidden="true"></span>
+                    }
+
+                    <label>  account</label>
+                </NavLink>
+            </div>
+        }
+
+        @if (AccountManager.State == AccountState.Guest)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="login">
+                    <span class="bi bi-box-arrow-in-right-nav-menu" aria-hidden="true" title="Login" ></span>
+                    Sign in
+                </NavLink>
+            </div>
+        }
 
     </nav>
 </div>

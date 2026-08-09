@@ -1,0 +1,95 @@
+import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap');
+
+.form {
+    position: relative;
+    z-index: 1;
+    background: #FFFFFF;
+    padding: 36px 32px;
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    width: 300px;
+    margin: 60px auto;
+    box-shadow: 0 12px 0 #E4DFFA, 0 20px 40px rgba(108, 92, 231, 0.18);
+    border: 3px solid #2D2D3A;
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+    .form > p {
+        text-align: center;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .form > p::before {
+            content: "Welcome to QuickMath";
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 800;
+            font-size: 26px;
+            color: #2D2D3A;
+        }
+
+        .form > p > span {
+            font-size: 15px;
+            color: #8B87A3;
+            font-weight: 600;
+        }
+
+.oauthButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 52px;
+    border-radius: 16px;
+    border: 3px solid #2D2D3A;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+    box-sizing: border-box;
+}
+
+    .oauthButton.google {
+        background: #FFFFFF;
+        color: #2D2D3A;
+        box-shadow: 0 6px 0 #2D2D3A;
+    }
+
+        .oauthButton.google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #2D2D3A;
+        }
+
+        .oauthButton.google:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #2D2D3A;
+        }
+
+    .oauthButton.guest {
+        background: #FFC93C;
+        color: #2D2D3A;
+        box-shadow: 0 6px 0 #C99A1F;
+    }
+
+        .oauthButton.guest:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #C99A1F;
+        }
+
+        .oauthButton.guest:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #C99A1F;
+        }
+
+.icon {
+    width: 22px;
+    height: 22px;
+}

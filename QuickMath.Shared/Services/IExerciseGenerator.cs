@@ -7,6 +7,10 @@ namespace QuickMath.Shared.Services
         Exercise NextAddition();
         Exercise NextSubtraction();
 
+        Exercise NextMultiplication();
+
+        Exercise NextDivision();
+
         void SetDifficulty(string difficulty);
     }
 }

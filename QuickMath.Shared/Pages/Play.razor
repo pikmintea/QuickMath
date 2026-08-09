@@ -1,6 +1,8 @@
 ﻿@page "/play"
+
 @using QuickMath.Shared.Services
 @using QuickMath.Shared.Models
+
 @inject IExerciseGenerator ExerciseGenerator
 
 <PageTitle>Play</PageTitle>
@@ -8,31 +10,39 @@
 @if (current != null)
 {
     <div class="play-page">
+
         <div class="floaters">
-            <span style="top:8%; left:6%; font-size:120px;">+</span>
-            <span style="top:70%; left:4%; font-size:90px; animation-delay:3s;">÷</span>
-            <span style="top:12%; left:88%; font-size:100px; animation-delay:5s;">×</span>
-            <span style="top:78%; left:86%; font-size:110px; animation-delay:2s;">=</span>
-            <span style="top:45%; left:2%; font-size:70px; animation-delay:7s;">7</span>
-            <span style="top:40%; left:94%; font-size:80px; animation-delay:4s;">−</span>
+            <span style="top: 8%; left: 6%; font-size: 120px;">+</span>
+            <span style="top: 70%; left: 4%; font-size: 90px; animation-delay: 3s;">÷</span>
+            <span style="top: 12%; left: 88%; font-size: 100px; animation-delay: 5s;">×</span>
+            <span style="top: 78%; left: 86%; font-size: 110px; animation-delay: 2s;">=</span>
+            <span style="top: 45%; left: 2%; font-size: 70px; animation-delay: 7s;">7</span>
+            <span style="top: 40%; left: 94%; font-size: 80px; animation-delay: 4s;">−</span>
         </div>
 
         <div class="switch">
-            <select class="dropdown" @bind="selectedOperation" >
-                <option  value="addition">addition</option>
+            <select class="dropdown" @bind="selectedOperation" @bind:after="NextQuestion">
+                <option value="addition">addition</option>
                 <option value="subtraction">subtraction</option>
+                <option value="multiplication">multiplication</option>
+                <option value="division">division</option>
             </select>
-            <select class="dropdown" @bind="selectedDifficulty" >
-                <option  value="easy++">easy++</option>
-                <option  value="easy">easy</option>
-                <option  value="medium">medium</option>
+
+            <select class="dropdown" @bind="selectedDifficulty" @bind:after="NextQuestion">
+                <option value="easy++">easy++</option>
+                <option value="easy">easy</option>
+                <option value="medium">medium</option>
+                <option value="hard">hard</option>
+                <option value="hard++">hard++</option>
+                
             </select>
         </div>
 
         <div class="corner-stat top-right">
-            <span class="corner-stat-num"> @streak</span>
+            <span class="corner-stat-num">@streak</span>
             <span class="corner-stat-label">Streak</span>
         </div>
+
         <div class="corner-stat top-right-2">
             <span class="corner-stat-num">@answeredCount</span>
             <span class="corner-stat-label">Answered</span>
@@ -40,16 +50,19 @@
 
         <div class="stage @stageState">
             <div class="question-text">@current.QuestionText</div>
+
             <input class="answer-input @cardState"
                    value="@answerInput"
                    @oninput="OnAnswerChanged"
                    inputmode="numeric"
                    autocomplete="off"
                    placeholder="?" />
+
             <div class="feedback-msg @cardState @(feedback != "" ? "show" : "")">@feedback</div>
         </div>
 
-        <div class="hint">Type your answer — it checks automatically</div>
+
+
     </div>
 }
 
@@ -59,13 +72,14 @@
     private string cardState = "";
     private string stageState = "";
     private string feedback = "";
+
     private int streak = 0;
     private int answeredCount = 0;
     private int correctCount = 0;
-    private bool isProcessing = false;
 
     public string selectedOperation = "addition";
     public string selectedDifficulty = "easy++";
+
     protected override void OnInitialized()
     {
         NextQuestion();
@@ -83,34 +97,37 @@
             ExerciseGenerator.SetDifficulty(selectedDifficulty);
             current = ExerciseGenerator.NextSubtraction();
         }
+        else if (selectedOperation == "multiplication")
+        {
+            ExerciseGenerator.SetDifficulty(selectedDifficulty);
+            current = ExerciseGenerator.NextMultiplication();
+        }
+        else if (selectedOperation == "division")
+        {
+            ExerciseGenerator.SetDifficulty(selectedDifficulty);
+            current = ExerciseGenerator.NextDivision();
+        }
         else
         {
-            cardState = "Select an operation"; 
+            cardState = "Select an operation";
         }
+
         answerInput = "";
         cardState = "";
         stageState = "";
         feedback = "";
-        isProcessing = false;
     }
-
 
     private async Task OnAnswerChanged(ChangeEventArgs e)
     {
-        if (isProcessing || current == null)
-        {
-            return;
-        }
-
         answerInput = e.Value?.ToString() ?? "";
 
         var expectedLength = current.CorrectAnswer.ToString().Length;
+
         if (answerInput.Length < expectedLength)
         {
             return;
         }
-
-        isProcessing = true;
 
         if (int.TryParse(answerInput, out var val) && val == current.CorrectAnswer)
         {

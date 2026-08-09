@@ -25,6 +25,20 @@ namespace QuickMath.Shared.Services
             var b = _random.Next(MinimumNumberB, MaximumNumberB + 1);
             return new Exercise { NumberA = a, NumberB = b, CorrectAnswer = a - b, operatorSymbol = operatorSymbol };
         }
+        public Exercise NextMultiplication()
+        {
+            string operatorSymbol = "*";
+            var a = _random.Next(MinimumNumberA, MaximumNumberA + 1);
+            var b = _random.Next(MinimumNumberB, MaximumNumberB + 1);
+            return new Exercise { NumberA = a, NumberB = b, CorrectAnswer = a * b, operatorSymbol = operatorSymbol };
+        }
+        public Exercise NextDivision()
+        {
+            string operatorSymbol = "/";
+            var a = _random.Next(MinimumNumberA, MaximumNumberA + 1);
+            var b = _random.Next(MinimumNumberB, MaximumNumberB + 1);
+            return new Exercise { NumberA = a, NumberB = b, CorrectAnswer = a / b, operatorSymbol = operatorSymbol };
+        }
         public void SetDifficulty(string difficulty)
         {
             switch (difficulty)
@@ -33,7 +47,7 @@ namespace QuickMath.Shared.Services
                     MinimumNumberA = 1;
                     MaximumNumberA = 10;
                     MinimumNumberB = 1;
-                    MaximumNumberB = 10;
+                    MaximumNumberB = 10; 
                     break;
                 case "easy":
                     MinimumNumberA = 10;
@@ -42,11 +56,25 @@ namespace QuickMath.Shared.Services
                     MaximumNumberB = 50;
                     break;
                 case "medium":
-                    MinimumNumberA = 50;
+                    MinimumNumberA = 20;
                     MaximumNumberA = 100;
-                    MinimumNumberB = 50;
+                    MinimumNumberB = 20;
                     MaximumNumberB = 100;
                     break;
+                case "hard":
+                    MinimumNumberA = 50;
+                    MaximumNumberA = 50;
+                    MinimumNumberB = 200;
+                    MaximumNumberB = 400;
+                    break;
+
+                    case "hard++":
+                    MinimumNumberA = 100;
+                    MaximumNumberA = 100;
+                    MinimumNumberB = 800;
+                    MaximumNumberB = 800;
+                    break;
+
             }
 
         }
