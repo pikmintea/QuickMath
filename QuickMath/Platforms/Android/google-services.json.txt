@@ -1,0 +1,1 @@
+You need to create an app on google firebase, android app, continue the config, config the auth with google sing in. and after donload the google-services.json from your general settings on your app page.
